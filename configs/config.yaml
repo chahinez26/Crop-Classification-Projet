@@ -1,0 +1,26 @@
+# configs/config.yaml
+
+seed: 42
+
+data:
+  arkansas_path: "data/processed/arkansas.npy" 
+  california_path: "data/processed/california.npy"
+  n_samples_per_class: 300
+  train_val_ratio: 0.8
+
+model:
+  n_stages: 3
+  n_heads: 5
+  kernel_size: 3
+  d_model: 64
+
+training:
+  batch_size: 32
+  epochs: 200
+  learning_rate: 0.001
+  optimizer: "adamw"
+  early_stopping_patience: 20
+
+output:
+  checkpoint_dir: "outputs/checkpoints/"
+  figures_dir: "outputs/figures/"
