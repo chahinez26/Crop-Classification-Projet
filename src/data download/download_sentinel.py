@@ -15,7 +15,6 @@ Pipeline per 10-day window:
 4. For each pixel: mask clouds using SCL, compute median of valid values
 5. Save as single GeoTIFF (10 bands)
 """
-
 import os
 import sys
 import time
