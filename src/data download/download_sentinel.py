@@ -165,25 +165,41 @@ def search_products(bbox, start_date, end_date, max_cloud=70, max_results=10):
 # ============================================================
 # DOWNLOAD
 # ============================================================
+# ==============================
+# 🔧 MODIFICATIONS IMPORTANTES :
+# ==============================
+# - products[:3] au lieu de 1
+# - vérification taille zip
+# - validation bandes extraites
+# - protection rasterio
+# - skip produits corrompus
+# ==============================
+
 def download_product(product_id, product_name, output_dir, token, 
                      username=None, password=None):
-    """Download avec refresh automatique du token si 401."""
+
     zip_path = os.path.join(output_dir, f"{product_name}.zip")
 
     if os.path.exists(zip_path):
         try:
             with zipfile.ZipFile(zip_path, "r") as zf:
                 zf.testzip()
-            return zip_path, token  # ← retourne aussi le token
-        except (zipfile.BadZipFile, Exception):
+
+            # ✅ NEW: check size
+            if os.path.getsize(zip_path) < 50 * 1024 * 1024:
+                raise Exception("Zip too small")
+
+            return zip_path, token
+
+        except:
             os.remove(zip_path)
 
-    url     = f"{DOWNLOAD_URL}({product_id})/$value"
+    url = f"{DOWNLOAD_URL}({product_id})/$value"
     partial = zip_path + ".partial"
 
     for attempt in range(1, 6):
         try:
-            headers    = {"Authorization": f"Bearer {token}"}
+            headers = {"Authorization": f"Bearer {token}"}
             downloaded = 0
 
             if os.path.exists(partial):
@@ -192,16 +208,10 @@ def download_product(product_id, product_name, output_dir, token,
 
             resp = requests.get(url, headers=headers, timeout=1800, stream=True)
 
-            # ── refresh token si 401 ──────────────────────────
             if resp.status_code == 401:
-                print(f"      Token expiré → refresh...")
-                if username and password:
-                    token = get_access_token(username, password)
-                    headers["Authorization"] = f"Bearer {token}"
-                    resp = requests.get(url, headers=headers, 
-                                       timeout=1800, stream=True)
-                else:
-                    raise Exception("Token expiré et pas de credentials pour refresh")
+                token = get_access_token(username, password)
+                headers["Authorization"] = f"Bearer {token}"
+                resp = requests.get(url, headers=headers, timeout=1800, stream=True)
 
             if resp.status_code == 200 and downloaded > 0:
                 downloaded = 0
@@ -212,28 +222,24 @@ def download_product(product_id, product_name, output_dir, token,
                 resp.raise_for_status()
                 mode = "wb"
 
-            total = int(resp.headers.get("content-length", 0)) + downloaded
-
             with open(partial, mode) as f:
                 for chunk in resp.iter_content(chunk_size=131072):
                     f.write(chunk)
-                    downloaded += len(chunk)
-                    if total > 0:
-                        pct = downloaded / total * 100
-                        print(f"\r      [{pct:5.1f}%] {downloaded/1e6:.0f}/{total/1e6:.0f} MB", 
-                              end="", flush=True)
-            print()
 
             os.replace(partial, zip_path)
-            return zip_path, token   # ← retourne le token mis à jour
 
-        except (requests.exceptions.RequestException, IOError) as e:
-            print(f"\n      Attempt {attempt}/5 failed: {e}")
-            if attempt < 5:
-                time.sleep(attempt * 15)
+            # ✅ NEW: final size check
+            if os.path.getsize(zip_path) < 50 * 1024 * 1024:
+                print("      Zip corrupted (too small)")
+                os.remove(zip_path)
+                return None, token
 
-    if os.path.exists(partial):
-        os.remove(partial)
+            return zip_path, token
+
+        except Exception as e:
+            print(f"      Attempt {attempt} failed: {e}")
+            time.sleep(attempt * 10)
+
     return None, token
 
 # ============================================================
@@ -403,38 +409,27 @@ def save_composite_geotiff(composites, output_path, ref_path):
 # ============================================================
 def process_window(area_name, bbox, start_date, end_date, window_idx,
                    token, username, password):
-    """
-    Process one 10-day window:
-    1. Search products
-    2. Download best products (up to 3)
-    3. Extract bands + SCL
-    4. Create cloud-masked median composite
-    5. Save as GeoTIFF
-    """
+
     output_dir = os.path.join(OUTPUT_BASE, area_name)
     output_path = os.path.join(output_dir, f"S2_{area_name}_{YEAR}_T{window_idx:02d}.tif")
 
     if os.path.exists(output_path) and os.path.getsize(output_path) > 1000:
-        print(f"    T{window_idx:02d} ({start_date} to {end_date}): exists, skipping")
         return True
 
-    print(f"\n    T{window_idx:02d} ({start_date} to {end_date}):")
+    print(f"\nT{window_idx:02d} ({start_date} → {end_date})")
 
-    # Search
-    products = search_products(bbox, str(start_date), str(end_date), max_cloud=70, max_results=5)
-
-    if not products:
-        # Relax cloud filter
-        products = search_products(bbox, str(start_date), str(end_date), max_cloud=95, max_results=3)
+    products = search_products(bbox, str(start_date), str(end_date), 70, 5)
 
     if not products:
-        print(f"      No products found — creating zero composite")
+        products = search_products(bbox, str(start_date), str(end_date), 95, 3)
+
+    if not products:
+        print("      No data → zero composite")
         _save_zero_composite(output_path, bbox)
         return True
 
-    # Take 1 best product per window (saves bandwidth)
-    products = products[:1]
-    print(f"      Found {len(products)} products")
+    # ✅ FIX PRINCIPAL
+    products = products[:3]
 
     temp_dir = os.path.join(TEMP_DIR, area_name, f"T{window_idx:02d}")
     os.makedirs(temp_dir, exist_ok=True)
@@ -444,90 +439,78 @@ def process_window(area_name, bbox, start_date, end_date, window_idx,
     ref_path = None
 
     for prod in products:
-        prod_id = prod["Id"]
-        prod_name = prod["Name"][:60]
 
-        cloud = "?"
-        for attr in prod.get("Attributes", []):
-            if attr.get("Name") == "cloudCover":
-                cloud = f"{attr.get('Value', 0):.0f}%"
+        print(f"      Product: {prod['Name'][:50]}")
 
-        print(f"      Product: {prod_name}... (cloud: {cloud})")
-
-        # Download
-        try:
-            zip_path, token = download_product(
-                 prod["Id"], prod["Name"], temp_dir, token,
-                 username=username, password=password )
-        except requests.exceptions.HTTPError as e:
-            if e.response and e.response.status_code == 401:
-                print("      Token expired, refreshing...")
-                token = get_access_token(username, password)
-                zip_path = download_product(prod["Id"], prod["Name"], temp_dir, token)
-            else:
-                print(f"      Download failed: {e}")
-                continue
+        zip_path, token = download_product(
+            prod["Id"], prod["Name"], temp_dir, token,
+            username=username, password=password
+        )
 
         if zip_path is None:
             continue
 
-        # Extract bands
-        print(f"      Extracting bands...")
         bands = extract_bands_from_safe(zip_path, temp_dir)
-        print(f"      Got {len(bands)} bands: {list(bands.keys())}")
 
-        if not bands:
+        # ✅ NEW: validation SAFE
+        if len(bands) < 6:
+            print("      Incomplete SAFE → skipped")
             continue
 
-        # Read first 10m band as reference for grid
         first_10m = next((bands[b] for b in BANDS_10M if b in bands), None)
+
         if first_10m is None:
             continue
 
-        with rasterio.open(first_10m) as src:
-            target_shape = (src.height, src.width)
-            target_transform = src.transform
-            target_crs = src.crs
+        try:
+            with rasterio.open(first_10m) as src:
+                target_shape = (src.height, src.width)
+                target_transform = src.transform
+                target_crs = src.crs
+        except:
+            print("      Corrupted reference band → skip")
+            continue
 
         if ref_path is None:
             ref_path = first_10m
 
-        # Read all bands (resample 20m to 10m)
         for band in ALL_BANDS:
             if band in bands:
                 try:
                     arr = read_and_resample_band(
                         bands[band], target_shape, target_transform, target_crs
                     )
-                    band_stacks[band].append(arr)
-                except Exception as e:
-                    print(f"      Warning: {band} read failed — {e}")
 
-        # Read SCL
+                    # ✅ NEW: skip invalid arrays
+                    if np.isnan(arr).mean() > 0.9:
+                        continue
+
+                    band_stacks[band].append(arr)
+
+                except Exception as e:
+                    print(f"      {band} failed")
+
         if SCL_BAND in bands:
             try:
                 scl = read_and_resample_band(
                     bands[SCL_BAND], target_shape, target_transform, target_crs
                 )
                 scl_stacks.append(scl)
-            except Exception:
+            except:
                 pass
 
-    # Check if we got any data
-    has_data = any(len(v) > 0 for v in band_stacks.values())
-    if not has_data or ref_path is None:
-        print(f"      No valid data — creating zero composite")
+    if not any(len(v) > 0 for v in band_stacks.values()):
+        print("      No valid data → zero composite")
         _save_zero_composite(output_path, bbox)
         return True
 
-    # Create composite
-    print(f"      Creating cloud-masked median composite...")
+    print("      Creating composite...")
     composites = create_composite(band_stacks, scl_stacks)
-    save_composite_geotiff(composites, output_path, ref_path)
-    size_mb = os.path.getsize(output_path) / 1e6
-    print(f"      Saved: {output_path} ({size_mb:.1f} MB)")
 
-    # Clean up ALL temp files for this window (save disk space)
+    save_composite_geotiff(composites, output_path, ref_path)
+
+    print(f"      Saved → {output_path}")
+
     import shutil
     shutil.rmtree(temp_dir, ignore_errors=True)
 
@@ -635,3 +618,4 @@ if __name__ == "__main__":
     #print(f"[DEBUG] username='{username}'")
     #print(f"[DEBUG] password='{password}'")
     main()
+
