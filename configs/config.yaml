@@ -1,26 +1,35 @@
-# configs/config.yaml
-
 seed: 42
 
 data:
-  arkansas_path: "data/processed/arkansas.npy" 
-  california_path: "data/processed/california.npy"
-  n_samples_per_class: 300
-  train_val_ratio: 0.8
+  state: "arkansas"
+  bands_path:  "data/processed/arkansas_bands_2021.npy"
+  masks_path:  "data/processed/arkansas_masks_2021.npy"
+  labels_path: "data/processed/arkansas_labels_2021.npy"
+  n_per_class: 300
+  val_ratio:   0.2
+
+#data:
+#  state: "california"
+#  bands_path:  "data/processed/california_bands_2021.npy"
+#  masks_path:  "data/processed/california_masks_2021.npy"
+#  labels_path: "data/processed/california_labels_2021.npy"
+#  n_per_class: 300
+#  val_ratio:   0.2
 
 model:
-  n_stages: 3
-  n_heads: 5
+  n_bands:     10
+  n_stages:    3
+  d_model:     64
+  n_heads:     5
   kernel_size: 3
-  d_model: 64
+  dropout:     0.1
 
 training:
-  batch_size: 32
-  epochs: 200
-  learning_rate: 0.001
-  optimizer: "adamw"
+  batch_size:              32
+  epochs:                  200
+  learning_rate:           0.001
   early_stopping_patience: 20
 
 output:
   checkpoint_dir: "outputs/checkpoints/"
-  figures_dir: "outputs/figures/"
+  figures_dir:    "outputs/figures/"
