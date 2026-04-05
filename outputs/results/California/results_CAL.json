@@ -1,0 +1,113 @@
+{
+  "dataset": "California",
+  "model": "MCTNet",
+  "n_test": 8220,
+  "OA": 0.844891,
+  "Kappa": 0.797015,
+  "F1_macro": 0.813825,
+  "paper_targets": {
+    "OA": 0.852,
+    "Kappa": 0.806,
+    "F1": 0.829
+  },
+  "per_class_metrics": [
+    {
+      "class": "Grapes",
+      "n_test": 1760,
+      "precision": 0.8041,
+      "recall": 0.7977,
+      "f1": 0.8009,
+      "OA": 0.9151
+    },
+    {
+      "class": "Rice",
+      "n_test": 1740,
+      "precision": 0.9914,
+      "recall": 0.9891,
+      "f1": 0.9902,
+      "OA": 0.9959
+    },
+    {
+      "class": "Alfalfa",
+      "n_test": 680,
+      "precision": 0.8666,
+      "recall": 0.9456,
+      "f1": 0.9044,
+      "OA": 0.9835
+    },
+    {
+      "class": "Almonds",
+      "n_test": 480,
+      "precision": 0.4425,
+      "recall": 0.7542,
+      "f1": 0.5578,
+      "OA": 0.9302
+    },
+    {
+      "class": "Pistachios",
+      "n_test": 340,
+      "precision": 0.6935,
+      "recall": 0.9118,
+      "f1": 0.7878,
+      "OA": 0.9797
+    },
+    {
+      "class": "Others",
+      "n_test": 3220,
+      "precision": 0.9172,
+      "recall": 0.778,
+      "f1": 0.8419,
+      "OA": 0.8855
+    }
+  ],
+  "confusion_matrix": [
+    [
+      1404,
+      0,
+      31,
+      148,
+      44,
+      133
+    ],
+    [
+      0,
+      1721,
+      0,
+      3,
+      0,
+      16
+    ],
+    [
+      8,
+      0,
+      643,
+      10,
+      2,
+      17
+    ],
+    [
+      43,
+      0,
+      6,
+      362,
+      11,
+      58
+    ],
+    [
+      20,
+      0,
+      2,
+      6,
+      310,
+      2
+    ],
+    [
+      271,
+      15,
+      60,
+      289,
+      80,
+      2505
+    ]
+  ]
+}
