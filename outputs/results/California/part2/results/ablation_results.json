@@ -1,0 +1,47 @@
+{
+  "C1_S2only": {
+    "label": "S2 only (baseline)",
+    "color": "#7f7f7f",
+    "n_params": 59019,
+    "best_epoch": 17,
+    "OA": 0.8342,
+    "Kappa": 0.7845,
+    "F1": 0.8137
+  },
+  "C2_Climate": {
+    "label": "S2 + Climat",
+    "color": "#1f77b4",
+    "n_params": 62599,
+    "best_epoch": 9,
+    "OA": 0.8151,
+    "Kappa": 0.7627,
+    "F1": 0.808
+  },
+  "C3_Soil": {
+    "label": "S2 + Sol",
+    "color": "#8c564b",
+    "n_params": 62599,
+    "best_epoch": 18,
+    "OA": 0.8483,
+    "Kappa": 0.8017,
+    "F1": 0.8305
+  },
+  "C4_Topo": {
+    "label": "S2 + Topo",
+    "color": "#bcbd22",
+    "n_params": 62583,
+    "best_epoch": 18,
+    "OA": 0.8297,
+    "Kappa": 0.7788,
+    "F1": 0.8193
+  },
+  "C5_All": {
+    "label": "S2 + Tout",
+    "color": "#e377c2",
+    "n_params": 63111,
+    "best_epoch": 18,
+    "OA": 0.8243,
+    "Kappa": 0.7735,
+    "F1": 0.806
+  }
+}
