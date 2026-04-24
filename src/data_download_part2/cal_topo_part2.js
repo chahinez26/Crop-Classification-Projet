@@ -102,10 +102,13 @@ var elevation = ee.Image('USGS/SRTMGL1_003')
   .unmask(0)
   .clip(GEOM);
 
-// 2. LANDFORMS — CSP/ERGo ALOS
-var landforms = ee.Image('CSP/ERGo/1_0/Global/ALOS_landforms')
-  .select('constant')
-  .rename('landforms')
+//    Californie : collines côtières + Sierra Nevada → complément essentiel à l'altitude seule
+//var landforms = ee.Image('CSP/ERGo/ALOS_landforms/v1')
+//  .select('landforms')
+//  .unmask(0)
+//  .clip(GEOM);
+var slope = ee.Terrain.slope(ee.Image('USGS/SRTMGL1_003'))
+  .rename('slope')
   .unmask(0)
   .clip(GEOM);
 

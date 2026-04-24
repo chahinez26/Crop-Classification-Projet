@@ -112,6 +112,11 @@ var soil_texture = ee.Image('OpenLandMap/SOL/SOL_TEXTURE-CLASS_USDA-TT_M/v02')
   .select('b0').rename('soil_texture')
   .unmask(-1).clip(GEOM);
 
+var slope = ee.Terrain.slope(ee.Image('USGS/SRTMGL1_003'))
+  .rename('slope')
+  .unmask(0)
+  .clip(GEOM);
+
 // =============================================================================
 // ASSEMBLAGE + LABELS
 // =============================================================================

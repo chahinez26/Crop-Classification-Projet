@@ -22,7 +22,7 @@ from sklearn.ensemble import RandomForestClassifier
 from scipy import stats as sp_stats
 
 # ── Configuration ──────────────────────────────────────────────────────────
-COV_FILE = r"data\merged_npz\california\CAL_covariates.npz"
+COV_FILE = r"data\processed\CAL_covariates_v2.npz"
 FIG_DIR  = r"outputs\figures\california\part2"
 
 os.makedirs(FIG_DIR, exist_ok=True)
@@ -33,14 +33,14 @@ N_CLASSES    = 6
 
 # Noms et labels d'affichage pour les 8 features
 FEATURE_INFO = {
-    'temp_mean'    : ('Température moy.\n(°C)',        'Climat'),
-    'precip_total' : ('Précipitations\ntotales (mm)', 'Climat'),
+    'temp_mean'    : ('Température moy.\n(°C)',       'Climat'),
+    'vpd_mean'     : ('VPD moyen\n(kPa)',             'Climat'),  # ← modifié
     'solar_mean'   : ('Rayonnement\nsolaire (W/m²)',  'Climat'),
-    'soil_ph'      : ('pH Sol',                        'Sol'),
-    'soil_oc'      : ('Carbone\norganique (g/kg)',     'Sol'),
-    'soil_texture' : ('Texture Sol\n(USDA 1-12)',      'Sol'),
-    'elevation'    : ('Élévation\n(m)',                'Topo'),
-    'landforms'    : ('Landforms\n(Weiss 21-42)',      'Topo'),
+    'soil_ph'      : ('pH Sol',                       'Sol'),
+    'soil_oc'      : ('Carbone\norganique (g/kg)',    'Sol'),
+    'soil_texture' : ('Texture Sol\n(USDA 1-12)',     'Sol'),
+    'elevation'    : ('Élévation\n(m)',               'Topo'),
+    'landforms'    : ('Landforms\n(Weiss 21-42)',     'Topo'),
 }
 GROUP_COLORS = {'Climat': '#1f77b4', 'Sol': '#8c564b', 'Topo': '#7f7f7f'}
 # ───────────────────────────────────────────────────────────────────────────
@@ -48,14 +48,27 @@ GROUP_COLORS = {'Climat': '#1f77b4', 'Sol': '#8c564b', 'Topo': '#7f7f7f'}
 
 def load_data():
     data = np.load(COV_FILE, allow_pickle=True)
-    cov_clim_raw = data['cov_clim_raw']
-    cov_soil_raw = data['cov_soil_raw']
-    cov_topo_raw = data['cov_topo_raw']
-    cov_all_norm = data['cov_all']
-    y            = data['y_all']
-    train_idx    = data['train_idx']
 
-    all_raw = np.concatenate([cov_clim_raw, cov_soil_raw, cov_topo_raw], axis=1)
+    # Clés correctes — identiques à ce que sauvegarde merge_covariables
+    X_clim_raw = data['X_clim_raw']   # [N, 36, 3]
+    mask_clim  = data['mask_clim']    # [N, 36]
+    X_soil_raw = data['X_soil_raw']   # [N, 3]
+    X_topo_raw = data['X_topo_raw']   # [N, 2]
+    cov_all_norm = np.concatenate([
+        data['X_soil'],
+        data['X_topo']
+    ], axis=1)                         # [N, 5] normalisé statique
+    y          = data['y_all']
+    train_idx  = data['train_idx']
+
+    # Moyennes climatiques annuelles [N, 3] pour l'EDA statique
+    clim_raw = np.stack([
+        np.where(mask_clim == 0, X_clim_raw[:, :, b], np.nan).mean(axis=1)
+        for b in range(3)
+    ], axis=1)
+
+    # Matrice complète [N, 8] : 3 clim + 3 sol + 2 topo
+    all_raw = np.concatenate([clim_raw, X_soil_raw, X_topo_raw], axis=1)
     all_features = list(FEATURE_INFO.keys())
 
     print(f"Chargé : {len(y)} points  |  {all_raw.shape[1]} covariables")
