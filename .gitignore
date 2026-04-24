@@ -2,4 +2,4 @@
 __pycache__/
 *.pyc
 *.pyo
-
+src/data_download_part2/credentials.json
