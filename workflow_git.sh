@@ -10,6 +10,8 @@ git merge feature-x
 git push 
 git branch -d feature-x
 git push origin --delete feature-x
+# suppression de la branche solve
+git branch -D solve
 
 # ./git_push.sh "update code"
 # Workflow pour supprimer les fichiers sensibles de l’historique Git et forcer le push du nouvel historique
