@@ -1,39 +1,39 @@
-// =============================================================================
-// MCTNet GEE — CALIFORNIA SOIL COVARIATES — Part 2
-// Basé sur gee_california_v2.js (Part 1) + corrections ark_soil_v2.js
-//
-// Variables sol (3) — OpenLandMap, profondeur 0-5 cm :
-//   1. soil_ph      → pH brut ×10 (ex: 70 = pH 7.0)
-//      → Raisins préfèrent pH 5.5-6.5, riz pH 5.5-6.5
-//      → Pistaches/amandes tolèrent pH 7-8 (sols calcaires San Joaquin)
-//      → Fort gradient N→S en Californie (acide nord, alcalin sud)
-//
-//   2. soil_oc      → Carbone organique brut dg/kg (ex: 80 = 8.0 g/kg)
-//      → Sols alluviaux Sacramento (haut OC) vs sables Kern (faible OC)
-//      → Discriminant entre cultures intensives et extensives
-//
-//   3. soil_texture → Classe USDA 1-12
-//      → Sacramento : limons argileux (riz) vs San Joaquin : sablo-limoneux
-//      → Pistaches préfèrent sols profonds bien drainés (texture 7-9)
-//
-// ⚠️  Zones ASYMÉTRIQUES California :
-//   Z0 : 5720 points  (Sacramento + Nord San Joaquin)
-//   Z1 : 4300 points  (San Joaquin Central + Tulare)
-//
-// PROCÉDURE (2 runs) :
-//   ZONE_INDEX = 0 → CAL_SOIL_Z0.csv  (5720 pts)
-//   ZONE_INDEX = 1 → CAL_SOIL_Z1.csv  (4300 pts)
-// =============================================================================
 
-// ════════════════════════════════════════════════════════════════════════════
-// ▶ CHANGER CETTE VARIABLE À CHAQUE RUN
-// ════════════════════════════════════════════════════════════════════════════
-var ZONE_INDEX = 0;   // 0 ou 1
-// ════════════════════════════════════════════════════════════════════════════
 
-// =============================================================================
-// PARAMÈTRES FIXES — identiques à gee_california_v2.js
-// =============================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+var ZONE_INDEX = 0;   
+
+
+
+
+
 var CDL_CONF       = 95;
 var FOLDER         = 'MCTNet_California_v2';
 var CLASS_VALUES   = [0, 1, 2, 3, 4, 5];
@@ -57,9 +57,9 @@ var GEOM         = ZONES[ZONE_INDEX];
 var zStr         = '' + ZONE_INDEX;
 var N_EXPECTED   = (ZONE_INDEX === 0) ? 5720 : 4300;
 
-// =============================================================================
-// IMAGE DE LABELS CDL — identique à gee_california_v2.js
-// =============================================================================
+
+
+
 function getLabelImage(geom) {
   var cdl = ee.ImageCollection('USDA/NASS/CDL')
     .filter(ee.Filter.date('2021-01-01', '2022-01-01'))
@@ -92,22 +92,22 @@ function getLabelImage(geom) {
     .clip(geom);
 }
 
-// =============================================================================
-// DONNÉES SOL — OpenLandMap (profondeur 0-5 cm, bande 'b0')
-// unmask(-1) : sécurité perte de points (même correction qu'Arkansas)
-// =============================================================================
 
-// 1. pH brut ×10 — conversion ÷10 dans Step9_merge_covariates.py
+
+
+
+
+
 var soil_ph = ee.Image('OpenLandMap/SOL/SOL_PH-H2O_USDA-4C1A2A_M/v02')
   .select('b0').rename('soil_ph')
   .unmask(-1).clip(GEOM);
 
-// 2. OC brut dg/kg — conversion ÷10 dans Step9
+
 var soil_oc = ee.Image('OpenLandMap/SOL/SOL_ORGANIC-CARBON_USDA-6A1C_M/v02')
   .select('b0').rename('soil_oc')
   .unmask(-1).clip(GEOM);
 
-// 3. Texture USDA 1-12 — pas de conversion
+
 var soil_texture = ee.Image('OpenLandMap/SOL/SOL_TEXTURE-CLASS_USDA-TT_M/v02')
   .select('b0').rename('soil_texture')
   .unmask(-1).clip(GEOM);
@@ -117,9 +117,9 @@ var slope = ee.Terrain.slope(ee.Image('USGS/SRTMGL1_003'))
   .unmask(0)
   .clip(GEOM);
 
-// =============================================================================
-// ASSEMBLAGE + LABELS
-// =============================================================================
+
+
+
 var labels = getLabelImage(GEOM);
 
 var imgForSample = labels
@@ -129,9 +129,9 @@ var imgForSample = labels
   .toFloat()
   .addBands(labels, null, true);
 
-// =============================================================================
-// VÉRIFICATIONS PRÉALABLES
-// =============================================================================
+
+
+
 print('=== MCTNet GEE — California Soil Covariates (OpenLandMap) ===');
 print('Zone       : Z' + zStr);
 print('Attendus   : ' + N_EXPECTED + ' points');
@@ -143,14 +143,14 @@ var phStats = soil_ph.reduceRegion({
 });
 print('Statistiques soil_ph Z' + zStr + ' (brut ×10) :');
 print(phStats);
-// Z0 Sacramento : mean ~60-65 (pH 6.0-6.5, légèrement acide)
-// Z1 San Joaquin: mean ~70-80 (pH 7.0-8.0, alcalin = calcaire)
+
+
 
 print('');
 
-// =============================================================================
-// STRATIFIED SAMPLE — MÊMES paramètres que gee_california_v2.js
-// =============================================================================
+
+
+
 var samples = imgForSample.stratifiedSample({
   numPoints   : 0,
   classBand   : 'crop_label',
@@ -164,9 +164,9 @@ var samples = imgForSample.stratifiedSample({
   tileScale   : 16
 });
 
-// =============================================================================
-// VÉRIFICATIONS
-// =============================================================================
+
+
+
 print('Points extraits :', samples.size());
 print('Attendu         : ' + N_EXPECTED);
 print('');
@@ -185,11 +185,11 @@ var n_tx_null = samples.filter(ee.Filter.eq('soil_texture', -1)).size();
 print('Nulls soil_ph :', n_ph_null);
 print('Nulls soil_oc :', n_oc_null);
 print('Nulls soil_tx :', n_tx_null);
-// Attendu : 0 pour tous
 
-// =============================================================================
-// EXPORT
-// =============================================================================
+
+
+
+
 Export.table.toDrive({
   collection     : samples,
   description    : 'CAL_SOIL_Z' + zStr,
@@ -198,9 +198,9 @@ Export.table.toDrive({
   fileFormat     : 'CSV'
 });
 
-// =============================================================================
-// VISUALISATION
-// =============================================================================
+
+
+
 Map.centerObject(GEOM, 8);
 
 Map.addLayer(soil_ph,
@@ -233,13 +233,13 @@ if (ZONE_INDEX === 0) {
   print('🏁 Les deux zones extraites !');
 }
 
-// =============================================================================
-// COLONNES DU CSV
-// =============================================================================
-// system:index  ← identique à CAL_CDL_Z*.csv de Part 1 ✅
-// crop_label    ← 0-5 (vérification)
-// soil_ph       ← pH brut ×10 | -1 si null
-// soil_oc       ← OC brut dg/kg | -1 si null
-// soil_texture  ← classe USDA 1-12 | -1 si null
-// .geo          ← lon/lat identiques à CAL_CDL_Z*.csv ✅
-// =============================================================================
+
+
+
+
+
+
+
+
+
+

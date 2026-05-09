@@ -1,36 +1,36 @@
-// =============================================================================
-// MCTNet GEE — CALIFORNIA TOPOGRAPHY COVARIATES — Part 2
-// Basé sur gee_california_v2.js (Part 1) + corrections ark_topo_v2.js
-//
-// Variables topo (2) — imposées par la prof :
-//   1. elevation  → USGS SRTM 30m (mètres)
-//      → Californie très contrastée : Delta (0-5m), Valley (50-150m),
-//        collines côtières (200-800m) → fort pouvoir discriminant
-//      → Riz = zones basses inondables (<20m), pistaches/amandes = coteaux
-//      → Raisins : vignobles en pente (50-300m altitude optimale)
-//
-//   2. landforms  → CSP/ERGo ALOS_landforms (classes Weiss 1-16)
-//      → Plaines = riz/alfalfa, coteaux = raisins/amandes, fonds de vallée = pistaches
-//      → Complément essentiel à l'altitude seule en terrain vallonné
-//
-// ⚠️  Zones ASYMÉTRIQUES California :
-//   Z0 : 5720 points  (Sacramento + Nord San Joaquin)
-//   Z1 : 4300 points  (San Joaquin Central + Tulare)
-//
-// PROCÉDURE (2 runs) :
-//   ZONE_INDEX = 0 → CAL_TOPO_Z0.csv  (5720 pts)
-//   ZONE_INDEX = 1 → CAL_TOPO_Z1.csv  (4300 pts)
-// =============================================================================
 
-// ════════════════════════════════════════════════════════════════════════════
-// ▶ CHANGER CETTE VARIABLE À CHAQUE RUN
-// ════════════════════════════════════════════════════════════════════════════
-var ZONE_INDEX = 0;   // 0 ou 1
-// ════════════════════════════════════════════════════════════════════════════
 
-// =============================================================================
-// PARAMÈTRES FIXES — identiques à gee_california_v2.js
-// =============================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+var ZONE_INDEX = 0;   
+
+
+
+
+
 var CDL_CONF       = 95;
 var FOLDER         = 'MCTNet_California_v2';
 var CLASS_VALUES   = [0, 1, 2, 3, 4, 5];
@@ -54,9 +54,9 @@ var GEOM         = ZONES[ZONE_INDEX];
 var zStr         = '' + ZONE_INDEX;
 var N_EXPECTED   = (ZONE_INDEX === 0) ? 5720 : 4300;
 
-// =============================================================================
-// IMAGE DE LABELS CDL — identique à gee_california_v2.js
-// =============================================================================
+
+
+
 function getLabelImage(geom) {
   var cdl = ee.ImageCollection('USDA/NASS/CDL')
     .filter(ee.Filter.date('2021-01-01', '2022-01-01'))
@@ -89,32 +89,32 @@ function getLabelImage(geom) {
     .clip(geom);
 }
 
-// =============================================================================
-// DONNÉES TOPOGRAPHIQUES
-// USGS SRTM 30m (identique à ark_topo_v2.js)
-// unmask(0) : sécurité perte de points par dropNulls
-// =============================================================================
 
-// 1. ELEVATION — USGS SRTM 30m
-//    Californie : relief plus varié qu'Arkansas → meilleur pouvoir discriminant
+
+
+
+
+
+
+
 var elevation = ee.Image('USGS/SRTMGL1_003')
   .select('elevation')
   .unmask(0)
   .clip(GEOM);
 
-//    Californie : collines côtières + Sierra Nevada → complément essentiel à l'altitude seule
-//var landforms = ee.Image('CSP/ERGo/ALOS_landforms/v1')
-//  .select('landforms')
-//  .unmask(0)
-//  .clip(GEOM);
+
+
+
+
+
 var slope = ee.Terrain.slope(ee.Image('USGS/SRTMGL1_003'))
   .rename('slope')
   .unmask(0)
   .clip(GEOM);
 
-// =============================================================================
-// ASSEMBLAGE + LABELS
-// =============================================================================
+
+
+
 var labels = getLabelImage(GEOM);
 
 var imgForSample = labels
@@ -123,9 +123,9 @@ var imgForSample = labels
   .toFloat()
   .addBands(labels, null, true);
 
-// =============================================================================
-// VÉRIFICATIONS PRÉALABLES
-// =============================================================================
+
+
+
 print('=== MCTNet GEE — California Topography Covariates (SRTM) ===');
 print('Zone      : Z' + zStr);
 print('Attendus  : ' + N_EXPECTED + ' points');
@@ -137,13 +137,13 @@ var elevStats = elevation.reduceRegion({
 });
 print('Statistiques elevation SRTM Z' + zStr + ' :');
 print(elevStats);
-// Z0 Sacramento : mean ~50-100m (basse plaine + quelques collines)
-// Z1 San Joaquin: mean ~100-200m (plaine + coteaux Tulare)
+
+
 print('');
 
-// =============================================================================
-// STRATIFIED SAMPLE — MÊMES paramètres que gee_california_v2.js
-// =============================================================================
+
+
+
 var samples = imgForSample.stratifiedSample({
   numPoints   : 0,
   classBand   : 'crop_label',
@@ -157,9 +157,9 @@ var samples = imgForSample.stratifiedSample({
   tileScale   : 16
 });
 
-// =============================================================================
-// VÉRIFICATIONS
-// =============================================================================
+
+
+
 print('Points extraits :', samples.size());
 print('Attendu         : ' + N_EXPECTED);
 print('');
@@ -175,9 +175,9 @@ print('');
 print('Exemple valeurs (5 points) :');
 print(samples.limit(5));
 
-// =============================================================================
-// EXPORT
-// =============================================================================
+
+
+
 Export.table.toDrive({
   collection     : samples,
   description    : 'CAL_TOPO_Z' + zStr,
@@ -186,9 +186,9 @@ Export.table.toDrive({
   fileFormat     : 'CSV'
 });
 
-// =============================================================================
-// VISUALISATION
-// =============================================================================
+
+
+
 Map.centerObject(GEOM, 8);
 
 Map.addLayer(elevation,
@@ -218,12 +218,12 @@ if (ZONE_INDEX === 0) {
   print('   CAL_TOPO_Z0 : 5720 pts  |  CAL_TOPO_Z1 : 4300 pts');
 }
 
-// =============================================================================
-// COLONNES DU CSV
-// =============================================================================
-// system:index  ← identique à CAL_CDL_Z*.csv de Part 1 ✅
-// crop_label    ← 0=Grapes,1=Rice,2=Alfalfa,3=Almonds,4=Pistachios,5=Others
-// elevation     ← altitude SRTM (m)
-// landforms     ← classe Weiss ALOS (11-42)
-// .geo          ← lon/lat identiques à CAL_CDL_Z*.csv ✅
-// =============================================================================
+
+
+
+
+
+
+
+
+
