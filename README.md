@@ -1,19 +1,4 @@
----
-{
-  "id": "file_mvhfkbc1",
-  "filetype": "document",
-  "filename": "README",
-  "created_at": "2026-05-05T10:05:17.564Z",
-  "updated_at": "2026-05-09T20:08:53.257Z",
-  "meta": {
-    "location": "/",
-    "tags": [],
-    "categories": [],
-    "description": "",
-    "source": "markdown"
-  }
-}
----
+
 # Deep Learning for Crop Classification Using Multi-Source Satellite Data
 
 Poject for the Neural Networks course — Master 2 SII, USTHB.
