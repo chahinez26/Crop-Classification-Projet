@@ -1,16 +1,3 @@
-"""
-ÉTAPE 4 — Vérification du split et résumé final
-=================================================
-Entrée  : ARK_dataset_preprocessed.npz
-Sortie  : console + figures/fig_split_summary.png
-
-Vérifie que tout est prêt pour entraîner MCTNet :
-  Shapes correctes
-  Distribution des classes dans chaque split
-  Absence de fuite train/test
-  Valeurs normalisées dans [0, 1]
-  Masque cohérent avec les zéros dans X
-"""
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -94,7 +81,7 @@ def check_class_distribution(splits):
 
 def check_no_leakage(splits):
     print("── 3. Absence de fuite train/test ──────────────────")
-    
+
     data = np.load(INPUT_FILE)
     train_idx = set(data['train_idx'].tolist())
     val_idx   = set(data['val_idx'].tolist())
@@ -132,7 +119,7 @@ def check_mask_consistency(splits):
     print("── 5. Cohérence masque / valeurs zéro ─────────────")
     for split, sp in splits.items():
         X, m = sp['X'], sp['m']
-        
+
         idx_miss = np.where(m == 1)
         all_zero = np.all(X[idx_miss[0], idx_miss[1], :] == 0)
         status = "✅" if all_zero else "❌"

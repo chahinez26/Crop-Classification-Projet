@@ -1,22 +1,6 @@
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 var ZONE_INDEX = 0;   
-
-
-
 
 
 var CDL_CONF     = 95;
@@ -36,8 +20,6 @@ var ZONES = [
 
 var GEOM = ZONES[ZONE_INDEX];
 var zStr = '' + ZONE_INDEX;
-
-
 
 
 function getLabelImage(geom) {
@@ -69,17 +51,10 @@ function getLabelImage(geom) {
 }
 
 
-
-
-
-
-
-
 var elevation = ee.Image('USGS/SRTMGL1_003')
   .select('elevation')
   .unmask(0)             
   .clip(GEOM);
-
 
 
 var landforms = ee.Image('CSP/ERGo/1_0/Global/ALOS_landforms')
@@ -89,11 +64,7 @@ var landforms = ee.Image('CSP/ERGo/1_0/Global/ALOS_landforms')
   .clip(GEOM);
 
 
-
-
 var labels = getLabelImage(GEOM);
-
-
 
 
 var imgForSample = labels
@@ -101,8 +72,6 @@ var imgForSample = labels
   .addBands(landforms)
   .toFloat()
   .addBands(labels, null, true);   
-
-
 
 
 print('=== MCTNet GEE — Topography Covariates v2 (SRTM) ===');
@@ -138,8 +107,6 @@ var samples = imgForSample.stratifiedSample({
 });
 
 
-
-
 print('Points extraits :', samples.size());   
 print('');
 
@@ -155,8 +122,6 @@ print('Exemple valeurs (5 premiers points) :');
 print(samples.limit(5));
 
 
-
-
 Export.table.toDrive({
   collection     : samples,
   description    : 'ARK_TOPO_Z' + zStr,
@@ -164,8 +129,6 @@ Export.table.toDrive({
   fileNamePrefix : 'ARK_TOPO_Z' + zStr,
   fileFormat     : 'CSV'
 });
-
-
 
 
 Map.centerObject(GEOM, 9);
@@ -195,13 +158,5 @@ if (ZONE_INDEX === 0) {
 } else {
   print('🏁 Les deux zones extraites !');
 }
-
-
-
-
-
-
-
-
 
 

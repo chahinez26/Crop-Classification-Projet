@@ -1,16 +1,3 @@
-"""
-ÉTAPE 2 — Exploration des données (EDA) — California
-======================================================
-Entrée  : CAL_dataset.npz
-Sorties : figures_california/  (PNG)
-  - fig_ndvi_timeseries.png
-  - fig_class_distribution.png
-  - fig_missing_heatmap.png
-  - fig_spectral_signatures.png
-
-6 classes California :
-  0=Grapes, 1=Rice, 2=Alfalfa, 3=Almonds, 4=Pistachios, 5=Others
-"""
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -128,7 +115,7 @@ def plot_missing_heatmap(mask, y):
 
     miss_pct = mask.mean(axis=0) * 100
     ax = axes[0]
-    
+
     ax.bar(np.arange(36), miss_pct,
            color=['#d62728' if v > 15 else '#1f77b4' for v in miss_pct],
            alpha=0.8)
@@ -164,7 +151,7 @@ def plot_missing_heatmap(mask, y):
 
 
 def plot_spectral_signatures(X, y, mask):
-    
+
     T_ETE = 17
     fig, ax = plt.subplots(figsize=(10, 5))
     x_bands = np.arange(10)

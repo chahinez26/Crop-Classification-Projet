@@ -1,12 +1,3 @@
-"""
-ÉTAPE 6 — Entraînement MCTNet — California
-==========================================
-Différences vs Arkansas :
-  - n_classes=6
-  - DATA_FILE → CAL_dataset_preprocessed.npz
-  - Importe CAL_Step5_mctnet (n_classes=6 par défaut)
-  - Métriques cibles : OA=0.852, Kappa=0.806, F1=0.829
-"""
 
 import numpy as np
 import torch

@@ -1,23 +1,3 @@
-"""
-STEP 0 - EDA Part 3 : Analyse exploratoire du dataset enrichi
-=============================================================
-Usage:
-    python Step0_eda_part3.py --region ark   # Arkansas (5 classes)
-    python Step0_eda_part3.py --region cal   # California (6 classes)
-
-Graphiques générés :
-    1.  Distribution des classes (train / val / test)
-    2.  Taux de données manquantes par timestep et par classe
-    3.  Profils temporels moyens — bandes spectrales (features 0-9)
-    4.  Profils temporels moyens — indices de végétation (features 10-14)
-    5.  Profils NDVI par classe (zoom)
-    6.  Boxplots des indices de végétation par classe
-    7.  Histogrammes KDE des 5 indices par classe
-    8.  Matrice de corrélation entre les 15 features
-    9.  ACP 2D colorée par classe
-    10. Heatmap de variance temporelle par feature et par classe
-    11. Tableau des statistiques descriptives (export PNG)
-"""
 
 import argparse
 import os
@@ -31,8 +11,6 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 
 warnings.filterwarnings("ignore")
-
-
 
 
 ROOT_DIR = r"C:\Users\chahi\Desktop\CNN_Transformer_Project\crop-classification"
@@ -61,9 +39,6 @@ N_TIMESTEPS = 36
 SPLIT_LABELS = {"train": "Train", "val": "Validation", "test": "Test"}
 
 
-
-
-
 def savefig(fig, path, tight=True):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     if tight:
@@ -86,13 +61,8 @@ def style_ax(ax, title="", xlabel="", ylabel="", grid=True):
 
 
 def get_class_data(X_all, y_all, mask_all, class_idx):
-    """Return samples belonging to class_idx (non-masked values)."""
     idx = y_all == class_idx
     return X_all[idx], mask_all[idx]
-
-
-
-
 
 
 def fig_class_distribution(data, cfg):
@@ -110,7 +80,7 @@ def fig_class_distribution(data, cfg):
     fig, axes = plt.subplots(1, 2, figsize=(14, 5))
     fig.suptitle(f"{cfg['label']} — Distribution des classes", fontsize=13, fontweight="bold")
 
-    
+
     x    = np.arange(n_classes)
     w    = 0.26
     ax   = axes[0]
@@ -126,7 +96,7 @@ def fig_class_distribution(data, cfg):
     ax.legend(fontsize=8)
     style_ax(ax, "Nombre d'échantillons par split", ylabel="Nombre d'échantillons")
 
-    
+
     ax2   = axes[1]
     total = np.array(counts["test"])
     wedge_props = {"edgecolor": "white", "linewidth": 1.5}
@@ -135,10 +105,6 @@ def fig_class_distribution(data, cfg):
     ax2.set_title("Répartition sur le jeu de test", fontsize=11, fontweight="bold")
 
     return fig
-
-
-
-
 
 
 def fig_missing_data(X_all, y_all, mask_all, cfg):
@@ -150,14 +116,14 @@ def fig_missing_data(X_all, y_all, mask_all, cfg):
     fig, axes = plt.subplots(1, 2, figsize=(15, 5))
     fig.suptitle(f"{cfg['label']} — Analyse des données manquantes (masque)", fontsize=13, fontweight="bold")
 
-    
+
     missing_global = mask_all.mean(axis=0) * 100  
     axes[0].bar(ts, missing_global, color="#4C72B0", alpha=0.8, edgecolor="white")
     axes[0].set_xticks(ts[::4])
     style_ax(axes[0], "Taux de données manquantes global par timestep",
              xlabel="Timestep (intervalle de 10 jours)", ylabel="% manquant")
 
-    
+
     for c, (cname, col) in enumerate(zip(class_names, colors)):
         mask_c = mask_all[y_all == c].mean(axis=0) * 100
         axes[1].plot(ts, mask_c, label=cname, color=col, linewidth=1.8, marker="o",
@@ -168,10 +134,6 @@ def fig_missing_data(X_all, y_all, mask_all, cfg):
              xlabel="Timestep", ylabel="% manquant")
 
     return fig
-
-
-
-
 
 
 def fig_temporal_profiles_bands(X_all, y_all, mask_all, cfg):
@@ -203,10 +165,6 @@ def fig_temporal_profiles_bands(X_all, y_all, mask_all, cfg):
     fig.legend(handles=handles, loc="lower center", ncol=len(class_names),
                fontsize=9, frameon=False, bbox_to_anchor=(0.5, -0.01))
     return fig
-
-
-
-
 
 
 def fig_temporal_profiles_indices(X_all, y_all, mask_all, cfg):
@@ -241,10 +199,6 @@ def fig_temporal_profiles_indices(X_all, y_all, mask_all, cfg):
     return fig
 
 
-
-
-
-
 def fig_ndvi_zoom(X_all, y_all, mask_all, cfg):
     class_names = cfg["class_names"]
     colors      = cfg["class_colors"]
@@ -268,7 +222,7 @@ def fig_ndvi_zoom(X_all, y_all, mask_all, cfg):
         ax.plot(ts, mean_ts, color=col, label=cname, linewidth=2.2, marker="o", markersize=3)
         ax.fill_between(ts, mean_ts - std_ts, mean_ts + std_ts, alpha=0.10, color=col)
 
-    
+
     month_ticks = np.arange(2, 37, 3)
     ax.set_xticks(month_ticks)
     ax.set_xticklabels(months, fontsize=8)
@@ -278,10 +232,6 @@ def fig_ndvi_zoom(X_all, y_all, mask_all, cfg):
     style_ax(ax, ylabel="NDVI normalisé")
 
     return fig
-
-
-
-
 
 
 def fig_boxplots_indices(X_all, y_all, mask_all, cfg):
@@ -317,10 +267,6 @@ def fig_boxplots_indices(X_all, y_all, mask_all, cfg):
     return fig
 
 
-
-
-
-
 def fig_kde_indices(X_all, y_all, mask_all, cfg):
     class_names = cfg["class_names"]
     colors      = cfg["class_colors"]
@@ -337,7 +283,7 @@ def fig_kde_indices(X_all, y_all, mask_all, cfg):
             vals = X_all[idx, :, feat_idx][mask_all[idx] == 0]
             if len(vals) < 10:
                 continue
-            
+
             xgrid = np.linspace(vals.min(), vals.max(), 300)
             try:
                 kde = gaussian_kde(vals, bw_method=0.15)
@@ -354,13 +300,9 @@ def fig_kde_indices(X_all, y_all, mask_all, cfg):
     return fig
 
 
-
-
-
-
 def fig_correlation_matrix(X_all, mask_all, cfg):
-    
-    
+
+
     N, T, F = X_all.shape
     means = np.full((N, F), np.nan)
     for n in range(N):
@@ -389,7 +331,7 @@ def fig_correlation_matrix(X_all, mask_all, cfg):
             ax.text(j, i, f"{val:.2f}", ha="center", va="center",
                     fontsize=6.5, color="white" if abs(val) > 0.6 else "black")
 
-    
+
     for pos in [9.5]:
         ax.axhline(pos, color="black", linewidth=1.5)
         ax.axvline(pos, color="black", linewidth=1.5)
@@ -400,15 +342,11 @@ def fig_correlation_matrix(X_all, mask_all, cfg):
     return fig
 
 
-
-
-
-
 def fig_pca_2d(X_all, y_all, mask_all, cfg):
     class_names = cfg["class_names"]
     colors      = cfg["class_colors"]
 
-    
+
     N, T, F = X_all.shape
     feats = np.zeros((N, F))
     for n in range(N):
@@ -426,7 +364,7 @@ def fig_pca_2d(X_all, y_all, mask_all, cfg):
     fig.suptitle(f"{cfg['label']} — ACP 2D sur les 15 features (moyenne temporelle)",
                  fontsize=13, fontweight="bold")
 
-    
+
     for c, (cname, col) in enumerate(zip(class_names, colors)):
         idx = y_all == c
         axes[0].scatter(pc[idx, 0], pc[idx, 1], c=col, label=cname,
@@ -437,7 +375,7 @@ def fig_pca_2d(X_all, y_all, mask_all, cfg):
              f"PC1 ({var_exp[0]:.1f}%)",
              f"PC2 ({var_exp[1]:.1f}%)")
 
-    
+
     for c, (cname, col) in enumerate(zip(class_names, colors)):
         idx  = y_all == c
         x_c, y_c = pc[idx, 0], pc[idx, 1]
@@ -454,15 +392,11 @@ def fig_pca_2d(X_all, y_all, mask_all, cfg):
     return fig
 
 
-
-
-
-
 def fig_temporal_variance_heatmap(X_all, y_all, mask_all, cfg):
     class_names = cfg["class_names"]
     n_classes   = len(class_names)
 
-    
+
     fig, axes = plt.subplots(1, n_classes, figsize=(5 * n_classes, 6), sharey=True)
     if n_classes == 1:
         axes = [axes]
@@ -495,19 +429,14 @@ def fig_temporal_variance_heatmap(X_all, y_all, mask_all, cfg):
         if c == 0:
             axes[c].set_yticks(range(15))
             axes[c].set_yticklabels(FEATURE_NAMES, fontsize=8)
-        
+
         axes[c].axhline(9.5, color="white", linewidth=1.5, linestyle="--")
 
     plt.colorbar(im, ax=axes[-1], label="Variance")
     return fig
 
 
-
-
-
-
 def fig_stats_table(X_all, y_all, mask_all, cfg):
-    """Statistiques mean / std / min / max par feature (train)."""
     class_names = cfg["class_names"]
     n_classes   = len(class_names)
 
@@ -537,12 +466,12 @@ def fig_stats_table(X_all, y_all, mask_all, cfg):
     table.set_fontsize(8)
     table.scale(1.2, 1.4)
 
-    
+
     for j in range(n_cols):
         table[(0, j)].set_facecolor("#2E75B6")
         table[(0, j)].set_text_props(color="white", fontweight="bold")
 
-    
+
     for i in range(1, 16):
         bg = "#EBF5FB" if i % 2 == 0 else "white"
         if i > 10:  
@@ -551,10 +480,6 @@ def fig_stats_table(X_all, y_all, mask_all, cfg):
             table[(i, j)].set_facecolor(bg)
 
     return fig
-
-
-
-
 
 
 def parse_args():
@@ -576,7 +501,7 @@ def main():
     print(f"Step 0 — EDA Part 3 : {cfg['label']}")
     print("=" * 65)
 
-    
+
     print(f"\nChargement des données : {cfg['data_file']}")
     data     = np.load(cfg["data_file"])
     X_all    = data["X_all"]
@@ -591,57 +516,57 @@ def main():
     os.makedirs(fig_dir, exist_ok=True)
     print(f"\nFigures enregistrées dans : {fig_dir}\n")
 
-    
+
     print("[1/11] Distribution des classes...")
     fig = fig_class_distribution(data, cfg)
     savefig(fig, os.path.join(fig_dir, "fig01_class_distribution.png"))
 
-    
+
     print("[2/11] Données manquantes...")
     fig = fig_missing_data(X_all, y_all, mask_all, cfg)
     savefig(fig, os.path.join(fig_dir, "fig02_missing_data.png"))
 
-    
+
     print("[3/11] Profils temporels — bandes spectrales...")
     fig = fig_temporal_profiles_bands(X_all, y_all, mask_all, cfg)
     savefig(fig, os.path.join(fig_dir, "fig03_temporal_bands.png"))
 
-    
+
     print("[4/11] Profils temporels — indices de végétation...")
     fig = fig_temporal_profiles_indices(X_all, y_all, mask_all, cfg)
     savefig(fig, os.path.join(fig_dir, "fig04_temporal_indices.png"))
 
-    
+
     print("[5/11] Calendrier phénologique NDVI...")
     fig = fig_ndvi_zoom(X_all, y_all, mask_all, cfg)
     savefig(fig, os.path.join(fig_dir, "fig05_ndvi_phenology.png"))
 
-    
+
     print("[6/11] Boxplots indices de végétation par classe...")
     fig = fig_boxplots_indices(X_all, y_all, mask_all, cfg)
     savefig(fig, os.path.join(fig_dir, "fig06_boxplots_indices.png"))
 
-    
+
     print("[7/11] Distributions KDE des indices...")
     fig = fig_kde_indices(X_all, y_all, mask_all, cfg)
     savefig(fig, os.path.join(fig_dir, "fig07_kde_indices.png"))
 
-    
+
     print("[8/11] Matrice de corrélation...")
     fig = fig_correlation_matrix(X_all, mask_all, cfg)
     savefig(fig, os.path.join(fig_dir, "fig08_correlation_matrix.png"))
 
-    
+
     print("[9/11] ACP 2D...")
     fig = fig_pca_2d(X_all, y_all, mask_all, cfg)
     savefig(fig, os.path.join(fig_dir, "fig09_pca_2d.png"))
 
-    
+
     print("[10/11] Heatmap variance temporelle...")
     fig = fig_temporal_variance_heatmap(X_all, y_all, mask_all, cfg)
     savefig(fig, os.path.join(fig_dir, "fig10_temporal_variance.png"))
 
-    
+
     print("[11/11] Tableau des statistiques descriptives...")
     fig = fig_stats_table(X_all, y_all, mask_all, cfg)
     savefig(fig, os.path.join(fig_dir, "fig11_stats_table.png"))

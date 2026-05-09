@@ -26,17 +26,13 @@ class CovariateEncoder(nn.Module):
 
 
 class MCTNetCov(nn.Module):
-    """
-    MCTNet + Late Fusion des covariables — California (n_classes=6).
-    n_cov : 2 (topo), 3 (clim ou sol), 8 (all)
-    """
     def __init__(self, n_bands=10, n_timesteps=36, n_classes=6,
                  n_stage=3, n_head=5, kernel_size=3, d_model=30,
                  dropout=0.1, n_cov=8, d_cov=16):
         super().__init__()
         self.n_cov = n_cov
 
-        
+
         self.input_embedding = nn.Linear(n_bands, d_model)
         self.stages = nn.ModuleList()
         t = n_timesteps
@@ -48,10 +44,10 @@ class MCTNetCov(nn.Module):
             t = t // 2
         self.pool = nn.MaxPool1d(kernel_size=2, stride=2)
 
-        
+
         self.cov_encoder = CovariateEncoder(n_cov, d_cov, dropout)
 
-        
+
         self.classifier = nn.Sequential(
             nn.Linear(d_model + d_cov, 64),
             nn.ReLU(),
@@ -73,7 +69,6 @@ class MCTNetCov(nn.Module):
 
 
 def build_model(n_cov, d_cov=16, device='cpu'):
-    """Construit MCTNet (n_cov=0) ou MCTNetCov (n_cov>0) — California."""
     if n_cov == 0:
         return MCTNet(n_bands=10, n_timesteps=36, n_classes=6,
                       n_stage=3, n_head=5, kernel_size=3,

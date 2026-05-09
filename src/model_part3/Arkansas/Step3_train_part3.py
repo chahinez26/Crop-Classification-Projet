@@ -1,16 +1,3 @@
-"""
-STEP 3 - Train Part 3 model on Arkansas
-=======================================
-Version v3:
-  - safer training setup, closer to the successful Part 1 baseline
-  - standard cross-entropy with light label smoothing
-  - best checkpoint selected using a conservative combined validation score
-
-Current presentation-friendly setup:
-  - default seed is 777 because it gave the best single-model Arkansas result
-  - this script trains one model only
-  - the old ensemble scripts are not required for normal usage
-"""
 
 import os
 import time

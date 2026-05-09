@@ -1,16 +1,3 @@
-"""
-PART 2 — ÉTAPE 5 : Visualisation des résultats d'ablation — California
-=======================================================================
-Entrée  : ablation_results.json + ablation_histories.npz
-Sorties : figures/part2/california/ — 4 figures
-  fig_ablation_metrics.png   — barplot OA/Kappa/F1 par config
-  fig_ablation_delta.png     — gain vs baseline
-  fig_ablation_learning.png  — courbes d'apprentissage
-  fig_ablation_radar.png     — radar OA/Kappa/F1
-
-6 classes : Grapes=0, Rice=1, Alfalfa=2, Almonds=3, Pistachios=4, Others=5
-Métriques papier Table 5 : OA=0.852, Kappa=0.806, F1=0.829
-"""
 
 import numpy as np
 import matplotlib.pyplot as plt

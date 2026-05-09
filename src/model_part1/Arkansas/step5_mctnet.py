@@ -5,8 +5,6 @@ import numpy as np
 import math
 
 
-
-
 class ECA(nn.Module):
     def __init__(self, channels, k_size=3):
         super().__init__()
@@ -16,14 +14,11 @@ class ECA(nn.Module):
         self.sigmoid = nn.Sigmoid() 
 
     def forward(self, x):
-        
+
         y = self.avg_pool(x.transpose(1, 2))   
         y = self.conv(y.transpose(1, 2))         
         y = self.sigmoid(y)                      
         return x * y                             
-
-
-
 
 
 class ALPE(nn.Module):
@@ -32,7 +27,7 @@ class ALPE(nn.Module):
         self.n_timesteps = n_timesteps
         self.d_model     = d_model
 
-        
+
         pe = torch.zeros(n_timesteps, d_model)
         position = torch.arange(0, n_timesteps, dtype=torch.float).unsqueeze(1)
         div_term = torch.exp(
@@ -46,31 +41,24 @@ class ALPE(nn.Module):
             pe[:, 1::2] = torch.cos(position * div_term)
         self.register_buffer('pe', pe)   
 
-        
+
         self.conv = nn.Conv1d(d_model, d_model, kernel_size=kernel_size,
                               padding=kernel_size // 2, bias=False)
         self.eca  = ECA(d_model)
 
     def forward(self, x, mask):
-        """
-        x    : [B, T, d_model] # d_model : nbr de neuronnes pour représenter chaque timestep
-        mask : [B, T]  — 1=missing, 0=présent
-        """
         B, T, C = x.shape
         pe = self.pe.unsqueeze(0).expand(B, -1, -1)   
 
-        
+
         mask_2d  = mask.unsqueeze(-1).expand_as(pe)
         pe_masked = pe * (1 - mask_2d)
 
-        
+
         pe_conv = self.conv(pe_masked.transpose(1, 2)).transpose(1, 2) 
         pe_final = self.eca(pe_conv) 
 
         return x + pe_final
-
-
-
 
 
 class TransformerSubmodule(nn.Module):
@@ -88,7 +76,7 @@ class TransformerSubmodule(nn.Module):
             dropout=dropout,
             batch_first=True
         )
-        
+
         self.ff = nn.Sequential(
             nn.Linear(d_model, d_model * 4),
             nn.ReLU(),
@@ -111,9 +99,6 @@ class TransformerSubmodule(nn.Module):
         return x
 
 
-
-
-
 class CNNSubmodule(nn.Module):
     def __init__(self, d_model=30, kernel_size=3):
         super().__init__()
@@ -133,9 +118,6 @@ class CNNSubmodule(nn.Module):
         return self.relu(out + residual)
 
 
-
-
-
 class CTFusion(nn.Module):
     def __init__(self, d_model=30, n_head=5, kernel_size=3,
                  use_alpe=False, n_timesteps=36, dropout=0.1):
@@ -151,18 +133,6 @@ class CTFusion(nn.Module):
         trans_out = self.transformer(x, mask)
         fused = torch.cat([cnn_out, trans_out], dim=-1)
         return self.fusion(fused)
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 class MCTNet(nn.Module):
@@ -181,7 +151,7 @@ class MCTNet(nn.Module):
 
         self.input_embedding = nn.Linear(n_bands, d_model)
 
-        
+
         self.stages = nn.ModuleList()
         t = n_timesteps
         for s in range(n_stage):
@@ -192,18 +162,14 @@ class MCTNet(nn.Module):
             )
             t = t // 2
 
-        
+
         self.pool = nn.MaxPool1d(kernel_size=2, stride=2)
 
-        
+
         self.classifier = nn.Linear(d_model, n_classes)
 
     def forward(self, x, mask):
-        """
-        x    : [B, T, n_bands]
-        mask : [B, T]
-        """
-        
+
         out = self.input_embedding(x)   
 
         for s, stage in enumerate(self.stages):
@@ -215,13 +181,10 @@ class MCTNet(nn.Module):
                 if s == 0:
                     mask = mask[:, ::2]
 
-        
+
         out = out.max(dim=1).values   
 
         return self.classifier(out)   
-
-
-
 
 
 def count_parameters(model):

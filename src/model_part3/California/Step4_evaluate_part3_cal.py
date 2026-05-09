@@ -1,12 +1,3 @@
-"""
-STEP 4 - Evaluate Part 3 model on California
-============================================
-
-Default behavior:
-  - without arguments, evaluates the default checkpoint produced by Step3
-  - the recommended default training seed is now 777 because it gave the
-    best single-model California result in our experiments
-"""
 
 import json
 import os

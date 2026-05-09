@@ -1,19 +1,3 @@
-"""
-merge_california.py — Fusion CSV California → CAL_dataset.npz
-=============================================================
-Entrée  : dossier MCTNet_California_v2/ avec 74 CSV
-Sortie  : CAL_dataset.npz → X[10020, 36, 10], y[10020], mask[10020, 36]
-
-SPÉCIFICITÉS CALIFORNIA vs Arkansas :
-  - 6 classes (Grapes=0, Rice=1, Alfalfa=2, Almonds=3, Pistachios=4, Others=5)
-  - Zones ASYMÉTRIQUES : Z0=5720 pts, Z1=4300 pts → total=10020 pts
-  - CLASS_POINTS différents par zone (stratégie géographique)
-  - Moins de nuages qu'Arkansas (climat méditerranéen)
-
-Papier Table 2 — California :
-  Grapes=2054, Rice=2037, Alfalfa=974, Almonds=783, Pistachios=640, Others=3512
-  TOTAL=10000  (notre total=10020, diff=+20 ≈ papier ✅)
-"""
 
 import os, json, csv
 import numpy as np
@@ -33,17 +17,12 @@ CLASS_POINTS_Z0 = {0:1030, 1:2030, 2:490, 3:390, 4:20,  5:1760}
 CLASS_POINTS_Z1 = {0:1030, 1:10,   2:490, 3:390, 4:620, 5:1760}  
 
 
-
 def parse_geo(geo_str):
     g = json.loads(geo_str)
     return float(g['coordinates'][0]), float(g['coordinates'][1])
 
 
 def load_cdl():
-    """
-    Charge les points CDL des 2 zones.
-    Retourne ref : dict (zone, system:index) -> {label, lon, lat, zone}
-    """
     print("── Chargement CDL California ───────────────────────")
     ref = {}
     expected = {0: sum(CLASS_POINTS_Z0.values()),
@@ -75,7 +54,6 @@ def load_cdl():
 
 
 def build_index_order(ref):
-    """Ordre stable : Z0 trié par index, puis Z1 trié par index."""
     z0 = sorted([(int(k[1]), k) for k in ref if k[0] == 0])
     z1 = sorted([(int(k[1]), k) for k in ref if k[0] == 1])
     ordered_keys = [k for _, k in z0] + [k for _, k in z1]
@@ -84,10 +62,6 @@ def build_index_order(ref):
 
 
 def load_spectral(t_idx, zone, key_to_row, X, mask):
-    """
-    Remplit X[i, t, :] et mask[i, t] depuis CAL_T{t}_Z{z}.csv.
-    Retourne (n_matched, n_missing).
-    """
     t_str = f"{t_idx+1:02d}"
     fpath = os.path.join(INPUT_DIR, f"CAL_T{t_str}_Z{zone}.csv")
 
@@ -139,19 +113,19 @@ def main():
         print(f"   Place tous les CSV de MCTNet_California_v2/ dans ce dossier.")
         return
 
-    
+
     ref = load_cdl()
     ordered_keys, key_to_row = build_index_order(ref)
     N = len(ordered_keys)
 
-    
+
     X    = np.zeros((N, N_TIMESTEPS, 10), dtype=np.float32)
     y    = np.array([ref[k]['label'] for k in ordered_keys], dtype=np.int32)
     mask = np.ones((N, N_TIMESTEPS), dtype=np.uint8)   
     lons = np.array([ref[k]['lon'] for k in ordered_keys], dtype=np.float64)
     lats = np.array([ref[k]['lat'] for k in ordered_keys], dtype=np.float64)
 
-    
+
     print("── Extraction spectrale ────────────────────────────")
     for t in range(N_TIMESTEPS):
         t_str = f"{t+1:02d}"
@@ -166,7 +140,7 @@ def main():
         print(f"  T{t_str} : {total_matched:5d} pts avec donnees | "
               f"{miss_n:5d} missing ({miss_pct:.1f}%)")
 
-    
+
     print("\n── Resume final ────────────────────────────────────")
     print(f"  X    : {X.shape}  float32")
     print(f"  y    : {y.shape}   int32")
@@ -180,7 +154,7 @@ def main():
     print(f"  Z0 (Sacramento Valley) : {sum(1 for k in ordered_keys if k[0]==0)} pts")
     print(f"  Z1 (San Joaquin Sud)   : {sum(1 for k in ordered_keys if k[0]==1)} pts")
 
-    
+
     np.savez_compressed(
         OUTPUT_FILE,
         X=X, y=y, mask=mask, lons=lons, lats=lats

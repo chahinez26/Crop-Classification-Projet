@@ -9,11 +9,8 @@ var S2_BANDS   = ['B2','B3','B4','B5','B6','B7','B8','B8A','B11','B12'];
 var BAND_NAMES = ['B02','B03','B04','B05','B06','B07','B08','B8A','B11','B12'];
 
 
-
 var CLASS_VALUES  = [0, 1, 2, 3, 4];
 var CLASS_POINTS  = [760, 380, 1210, 2340, 310];  
-
-
 
 
 var CDL_CORN    = 1;
@@ -22,26 +19,15 @@ var CDL_RICE    = 3;
 var CDL_SOYBEAN = 5;
 
 
-
-
-
-
-
-
 var ZONES = [
-  
+
   ee.Geometry.Rectangle([-91.50, 34.75, -90.05, 35.85]),
 
-  
+
   ee.Geometry.Rectangle([-91.80, 33.15, -90.25, 34.75])
 ];
 
 var GEOM = ZONES[ZONE_INDEX];
-
-
-
-
-
 
 
 function windowDates(t, year) {
@@ -56,7 +42,6 @@ function windowDates(t, year) {
   if (w === 1) return [year + '-' + mStr + '-11', year + '-' + mStr + '-21'];
   return [year + '-' + mStr + '-21', nxt];
 }
-
 
 
 function getComposite(geom, start, end) {
@@ -76,7 +61,6 @@ function getComposite(geom, start, end) {
     zero
   ));
 }
-
 
 
 function getLabelImage(geom) {
@@ -117,8 +101,6 @@ function getLabelImage(geom) {
 }
 
 
-
-
 var tStr   = (T_INDEX + 1) < 10 ? '0' + (T_INDEX + 1) : '' + (T_INDEX + 1);
 var zStr   = '' + ZONE_INDEX;
 var dates  = windowDates(T_INDEX, YEAR);
@@ -133,9 +115,6 @@ if (MODE === 'SPECTRAL') {
 print('');
 
 
-
-
-
 if (MODE === 'CDL_SAMPLE') {
 
   print('→ stratifiedSample depuis CDL 2021');
@@ -143,13 +122,7 @@ if (MODE === 'CDL_SAMPLE') {
   print('  Total cible : 5000 points par zone');
   print('');
 
-  
-  
-  
-  
-  
-  
-  
+
   var points = labels.stratifiedSample({
     numPoints   : 0,                
     classBand   : 'crop_label',
@@ -163,13 +136,12 @@ if (MODE === 'CDL_SAMPLE') {
     tileScale   : 16
   });
 
-  
+
   var cdlRaw = ee.ImageCollection('USDA/NASS/CDL')
     .filter(ee.Filter.date('2021-01-01', '2022-01-01'))
     .first().select('cropland').rename('cdl_raw').clip(GEOM);
 
-  
-  
+
   var labelsWithRaw = labels.addBands(cdlRaw);
 
   var pointsFinal = labelsWithRaw.stratifiedSample({
@@ -204,7 +176,7 @@ if (MODE === 'CDL_SAMPLE') {
     fileFormat     : 'CSV'
   });
 
-  
+
   Map.centerObject(GEOM, 10);
   Map.addLayer(labels,
     {min:0, max:4, palette:['4CAF50','F44336','2196F3','FF9800','9E9E9E']},
@@ -222,10 +194,6 @@ if (MODE === 'CDL_SAMPLE') {
   print('  4. Passer à MODE="SPECTRAL", T_INDEX=0..35');
 
 
-
-
-
-
 } else if (MODE === 'SPECTRAL') {
 
   print('→ Composite Sentinel-2 T' + tStr);
@@ -238,8 +206,7 @@ if (MODE === 'CDL_SAMPLE') {
 
   var comp = getComposite(GEOM, dates[0], dates[1]);
 
-  
-  
+
   var imgForSample = comp.addBands(labels);
 
   var samples = imgForSample.stratifiedSample({
@@ -269,7 +236,7 @@ if (MODE === 'CDL_SAMPLE') {
     fileFormat     : 'CSV'
   });
 
-  
+
   Map.centerObject(GEOM, 10);
   Map.addLayer(comp.select(['B04','B03','B02']),
     {min:0, max:3000, gamma:1.4}, 'RGB T' + tStr + ' Z' + zStr);
@@ -294,34 +261,5 @@ if (MODE === 'CDL_SAMPLE') {
   print('❌ MODE inconnu : "' + MODE + '"');
   print('   Utiliser "CDL_SAMPLE" ou "SPECTRAL"');
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

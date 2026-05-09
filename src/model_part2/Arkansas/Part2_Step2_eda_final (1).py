@@ -1,9 +1,3 @@
-"""
-PART 2 — ÉTAPE 2 : Analyse exploratoire des covariables (EDA)
-==============================================================
-Entrée  : ARK_covariates_v2.npz
-Sorties : outputs/figures/arkansas/part2/
-"""
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -53,7 +47,6 @@ TIMESTEP_LABELS = [
 ]
 
 
-
 def load_data():
     d = np.load(COV_FILE, allow_pickle=True)
 
@@ -67,7 +60,7 @@ def load_data():
     train_idx  = d['train_idx']
     test_idx   = d['test_idx']
 
-    
+
     clim_raw = np.stack([
         np.where(mask_clim == 0, X_clim_raw[:, :, b], np.nan).mean(axis=1)
         for b in range(3)
@@ -76,7 +69,7 @@ def load_data():
     static_raw  = np.concatenate([X_soil_raw, X_topo_raw], axis=1)   
     static_norm = np.concatenate([X_soil,     X_topo],     axis=1)   
 
-    
+
     raw  = np.concatenate([clim_raw,  static_raw],  axis=1)
     norm = np.concatenate([clim_raw,  static_norm], axis=1)
 
@@ -85,7 +78,6 @@ def load_data():
     print(f"Chargé : N={len(y)}  clim={clim_raw.shape}  static={static_raw.shape}  "
           f"total={raw.shape}")
     return raw, norm, y, train_idx, test_idx, features
-
 
 
 def plot_distributions(raw, y, features):
@@ -112,7 +104,7 @@ def plot_distributions(raw, y, features):
         ax.tick_params(labelsize=7)
         ax.grid(alpha=0.3)
 
-    
+
     for ax in axes[n_feat:]:
         ax.set_visible(False)
 
@@ -128,7 +120,6 @@ def plot_distributions(raw, y, features):
     plt.savefig(out, dpi=150, bbox_inches='tight')
     plt.close()
     print(f"✅ {out}")
-
 
 
 def plot_boxplots(raw, y, features):
@@ -182,7 +173,6 @@ def plot_boxplots(raw, y, features):
     print(f"✅ {out}")
 
 
-
 def plot_correlation(raw, features):
     labels_display = [FEATURE_INFO[f][0] for f in features]
 
@@ -207,12 +197,11 @@ def plot_correlation(raw, features):
     print(f"✅ {out}")
 
 
-
 def plot_pca(norm, y):
     rng = np.random.default_rng(42)
     idx = rng.choice(len(y), min(3000, len(y)), replace=False)
 
-    
+
     sub_norm = norm[idx]
     valid    = np.all(np.isfinite(sub_norm), axis=1)
     sub_norm = sub_norm[valid]
@@ -242,9 +231,8 @@ def plot_pca(norm, y):
     print(f"✅ {out}")
 
 
-
 def plot_importance(norm, y, train_idx, test_idx, features):
-    
+
     valid_train = np.all(np.isfinite(norm[train_idx]), axis=1)
     valid_test  = np.all(np.isfinite(norm[test_idx]),  axis=1)
 
@@ -285,7 +273,6 @@ def plot_importance(norm, y, train_idx, test_idx, features):
     for rank, i in enumerate(order):
         print(f"     {rank+1}. {labels[i]:30s} {imp[i]:.4f}  "
               f"({FEATURE_INFO[features[i]][1]})")
-
 
 
 def print_stats_table(raw, y, features):

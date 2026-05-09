@@ -1,12 +1,3 @@
-"""
-ÉTAPE 7 — Évaluation complète — California
-==========================================
-Entrée  : best_model_cal.pth + CAL_dataset_preprocessed.npz
-Sortie  : results_CAL.json + figures
-
-6 classes : Grapes=0, Rice=1, Alfalfa=2, Almonds=3, Pistachios=4, Others=5
-Métriques cibles (papier Table 5) : OA=0.852, Kappa=0.806, F1=0.829
-"""
 
 import numpy as np
 import torch
@@ -42,7 +33,6 @@ PAPER_RESULTS = {
     'LSTM'       : {'OA': 0.799, 'Kappa': 0.739, 'F1': 0.766},
     'TAE'        : {'OA': 0.787, 'Kappa': 0.728, 'F1': 0.767},
 }
-
 
 
 def confusion_matrix_fn(y_true, y_pred):

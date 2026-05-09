@@ -47,7 +47,7 @@ def normalize_features(x_full, train_idx, mask):
     mask_train = mask[train_idx]
 
     for feat_idx, feat_name in enumerate(FEATURE_NAMES):
-        
+
         vals_train = x_train[:, :, feat_idx][mask_train == 0]
         feat_min = float(vals_train.min())
         feat_max = float(vals_train.max())

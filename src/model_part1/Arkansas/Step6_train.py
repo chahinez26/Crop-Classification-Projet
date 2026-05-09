@@ -152,7 +152,7 @@ def main():
 
     train_loader, val_loader, test_loader = load_data()
 
-    
+
     model = MCTNet(n_bands=10, n_timesteps=36, n_classes=N_CLASSES,
                    n_stage=N_STAGE, n_head=N_HEAD,
                    kernel_size=KERNEL_SIZE, d_model=D_MODEL,

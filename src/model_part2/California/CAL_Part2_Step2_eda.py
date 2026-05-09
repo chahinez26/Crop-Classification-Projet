@@ -1,16 +1,3 @@
-"""
-PART 2 — ÉTAPE 2 : Analyse exploratoire des covariables (EDA) — California
-===========================================================================
-Entrée  : CAL_covariates.npz
-Sorties : figures/part2/california/
-  fig_cov_distributions.png  — histogrammes par classe
-  fig_cov_boxplots.png        — boxplots par classe
-  fig_cov_correlation.png     — matrice de corrélation
-  fig_cov_pca.png             — PCA 2D colorée par classe
-  fig_cov_importance.png      — importance Random Forest
-
-6 classes : Grapes=0, Rice=1, Alfalfa=2, Almonds=3, Pistachios=4, Others=5
-"""
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -43,7 +30,6 @@ FEATURE_INFO = {
     'landforms'    : ('Landforms\n(Weiss 21-42)',     'Topo'),
 }
 GROUP_COLORS = {'Climat': '#1f77b4', 'Sol': '#8c564b', 'Topo': '#7f7f7f'}
-
 
 
 def load_data():
@@ -79,7 +65,6 @@ def load_data():
     all_features = list(FEATURE_INFO.keys())
 
     return all_raw, cov_all_norm, y, train_idx, all_features
-
 
 
 def plot_distributions(raw, y, features):
@@ -120,7 +105,6 @@ def plot_distributions(raw, y, features):
     print(f"✅ {out}")
 
 
-
 def plot_boxplots(raw, y, features):
     fig, axes = plt.subplots(2, 4, figsize=(16, 9))
     axes = axes.flatten()
@@ -146,7 +130,7 @@ def plot_boxplots(raw, y, features):
         ax.tick_params(labelsize=7)
         ax.grid(axis='y', alpha=0.3)
 
-        
+
         try:
             f_stat, p_val = sp_stats.f_oneway(*data_by_class)
             sig = '***' if p_val < 0.001 else ('**' if p_val < 0.01 else
@@ -164,7 +148,6 @@ def plot_boxplots(raw, y, features):
     plt.savefig(out, dpi=150, bbox_inches='tight')
     plt.close()
     print(f"✅ {out}")
-
 
 
 def plot_correlation(raw, features):
@@ -189,7 +172,6 @@ def plot_correlation(raw, features):
     plt.savefig(out, dpi=150, bbox_inches='tight')
     plt.close()
     print(f"✅ {out}")
-
 
 
 def plot_pca(cov_norm, y):
@@ -217,7 +199,6 @@ def plot_pca(cov_norm, y):
     plt.savefig(out, dpi=150, bbox_inches='tight')
     plt.close()
     print(f"✅ {out}")
-
 
 
 def plot_importance(cov_norm, y, train_idx, features):

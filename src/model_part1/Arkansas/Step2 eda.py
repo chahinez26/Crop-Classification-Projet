@@ -1,15 +1,3 @@
-"""
-ÉTAPE 2 — Exploration des données (EDA)
-========================================
-Entrée  : ARK_dataset.npz
-Sorties : figures/  (PNG)
-  - fig_ndvi_timeseries.png   ← reproduit Fig. 2(a) du papier
-  - fig_class_distribution.png
-  - fig_missing_heatmap.png
-  - fig_band_correlation.png
-
-Installer : pip install matplotlib seaborn
-"""
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -47,13 +35,11 @@ def load_data():
 
 
 def compute_ndvi(X, mask):
-    """NDVI = (B08 - B04) / (B08 + B04). Pixels missing → NaN."""
     b8  = X[:, :, 6].copy()   
     b4  = X[:, :, 2].copy()   
     denom = b8 + b4
     ndvi = np.where((denom > 0) & (mask == 0), (b8 - b4) / denom, np.nan)
     return ndvi
-
 
 
 def plot_ndvi_timeseries(X, y, mask):
@@ -74,7 +60,7 @@ def plot_ndvi_timeseries(X, y, mask):
         ax.fill_between(t_axis, mean - std, mean + std,
                         color=color, alpha=0.12, zorder=2)
 
-    
+
     for x, season in [(0,'Winter'), (9,'Spring'), (18,'Summer'), (27,'Autumn')]:
         ax.axvline(x, color='gray', linewidth=0.6, linestyle='--', alpha=0.5)
         ax.text(x + 0.3, 0.82, season, fontsize=8, color='gray', va='top')
@@ -93,7 +79,6 @@ def plot_ndvi_timeseries(X, y, mask):
     plt.savefig(out, dpi=150, bbox_inches='tight')
     plt.close()
     print(f"✅ Sauvé : {out}")
-
 
 
 def plot_class_distribution(y):
@@ -130,11 +115,10 @@ def plot_class_distribution(y):
     print(f"✅ Sauvé : {out}")
 
 
-
 def plot_missing_heatmap(mask, y):
     fig, axes = plt.subplots(1, 2, figsize=(14, 5))
 
-    
+
     miss_pct = mask.mean(axis=0) * 100
     ax = axes[0]
     ax.bar(np.arange(36), miss_pct,
@@ -149,7 +133,7 @@ def plot_missing_heatmap(mask, y):
     ax.legend(fontsize=9)
     ax.grid(axis='y', alpha=0.3)
 
-    
+
     ax2 = axes[1]
     miss_by_class = np.zeros((5, 36))
     for lbl in range(5):
@@ -172,7 +156,6 @@ def plot_missing_heatmap(mask, y):
     plt.savefig(out, dpi=150, bbox_inches='tight')
     plt.close()
     print(f"✅ Sauvé : {out}")
-
 
 
 def plot_spectral_signatures(X, y, mask):
@@ -209,7 +192,7 @@ def print_summary_stats(X, y, mask):
     print(f"  Missing global   : {100*mask.mean():.2f}%")
     print(f"  Présents global  : {100*(1-mask.mean()):.2f}%")
 
-    
+
     miss_per_t = mask.mean(axis=0) * 100
     t_worst  = int(miss_per_t.argmax())
     t_best   = int(miss_per_t.argmin())
@@ -218,7 +201,7 @@ def print_summary_stats(X, y, mask):
     print(f"  Timestep le + clair   : T{t_best+1:02d} ({TIMESTEP_LABELS[t_best]})  "
           f"→ {miss_per_t[t_best]:.1f}% missing")
 
-    
+
     print(f"\n  Statistiques bandes à T18 (juillet) :")
     idx_present = np.where(mask[:, 17] == 0)[0]
     print(f"  {'Bande':5s}  {'Moyenne':>8s}  {'Std':>8s}  {'Min':>8s}  {'Max':>8s}")

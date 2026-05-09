@@ -1,11 +1,3 @@
-"""
-ÉTAPE 4 — Vérification du split — California
-=============================================
-Entrée  : CAL_dataset_preprocessed.npz
-Sortie  : console + figures_california/fig_split_summary.png
-
-6 classes : Grapes=0, Rice=1, Alfalfa=2, Almonds=3, Pistachios=4, Others=5
-"""
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -37,7 +29,7 @@ def load_data():
 
 def check_shapes(splits):
     print("── 1. Vérification des shapes ──────────────────────")
-    
+
     expected_train = (6 * 240, 36, 10)
     expected_val   = (6 * 60,  36, 10)
 

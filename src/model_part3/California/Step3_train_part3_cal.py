@@ -1,7 +1,3 @@
-"""
-STEP 3 - Train Part 3 model on California
-=========================================
-"""
 
 import os
 import time

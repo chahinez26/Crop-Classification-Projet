@@ -3,7 +3,6 @@ import os
 import numpy as np
 
 
-
 RAW_FILE = r"data\merged_npz\california\CAL_dataset.npz"
 PART1_FILE = r"data\processed\CAL_dataset_preprocessed.npz"
 OUTPUT_DIR = r"data\merged_npz\california"

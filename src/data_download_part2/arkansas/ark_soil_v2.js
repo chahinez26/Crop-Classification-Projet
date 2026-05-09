@@ -1,22 +1,6 @@
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 var ZONE_INDEX = 0;   
-
-
-
 
 
 var CDL_CONF     = 95;
@@ -36,8 +20,6 @@ var ZONES = [
 
 var GEOM = ZONES[ZONE_INDEX];
 var zStr = '' + ZONE_INDEX;
-
-
 
 
 function getLabelImage(geom) {
@@ -69,21 +51,11 @@ function getLabelImage(geom) {
 }
 
 
-
-
-
-
-
-
-
-
 var soil_ph = ee.Image('OpenLandMap/SOL/SOL_PH-H2O_USDA-4C1A2A_M/v02')
   .select('b0')
   .rename('soil_ph')
   .unmask(-1)     
   .clip(GEOM);
-
-
 
 
 var soil_oc = ee.Image('OpenLandMap/SOL/SOL_ORGANIC-CARBON_USDA-6A1C_M/v02')
@@ -93,16 +65,11 @@ var soil_oc = ee.Image('OpenLandMap/SOL/SOL_ORGANIC-CARBON_USDA-6A1C_M/v02')
   .clip(GEOM);
 
 
-
-
-
 var soil_texture = ee.Image('OpenLandMap/SOL/SOL_TEXTURE-CLASS_USDA-TT_M/v02')
   .select('b0')
   .rename('soil_texture')
   .unmask(-1)     
   .clip(GEOM);
-
-
 
 
 var labels = getLabelImage(GEOM);
@@ -113,8 +80,6 @@ var imgForSample = labels
   .addBands(soil_texture)
   .toFloat()
   .addBands(labels, null, true);   
-
-
 
 
 print('=== MCTNet GEE — Soil Covariates v2 (OpenLandMap) ===');
@@ -159,8 +124,6 @@ var samples = imgForSample.stratifiedSample({
 });
 
 
-
-
 print('Points extraits :', samples.size());   
 print('');
 
@@ -186,8 +149,6 @@ print('Exemple valeurs (5 premiers points) :');
 print(samples.limit(5));
 
 
-
-
 Export.table.toDrive({
   collection     : samples,
   description    : 'ARK_SOIL_Z' + zStr,
@@ -195,8 +156,6 @@ Export.table.toDrive({
   fileNamePrefix : 'ARK_SOIL_Z' + zStr,
   fileFormat     : 'CSV'
 });
-
-
 
 
 Map.centerObject(GEOM, 9);
@@ -230,20 +189,5 @@ if (ZONE_INDEX === 0) {
 } else {
   print('🏁 Les deux zones extraites !');
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

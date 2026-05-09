@@ -1,34 +1,6 @@
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 var ZONE_INDEX = 0;   
-
-
-
 
 
 var CDL_CONF       = 95;
@@ -53,8 +25,6 @@ var CLASS_POINTS = (ZONE_INDEX === 0) ? CLASS_POINTS_Z0 : CLASS_POINTS_Z1;
 var GEOM         = ZONES[ZONE_INDEX];
 var zStr         = '' + ZONE_INDEX;
 var N_EXPECTED   = (ZONE_INDEX === 0) ? 5720 : 4300;
-
-
 
 
 function getLabelImage(geom) {
@@ -90,29 +60,16 @@ function getLabelImage(geom) {
 }
 
 
-
-
-
-
-
-
-
 var elevation = ee.Image('USGS/SRTMGL1_003')
   .select('elevation')
   .unmask(0)
   .clip(GEOM);
 
 
-
-
-
-
 var slope = ee.Terrain.slope(ee.Image('USGS/SRTMGL1_003'))
   .rename('slope')
   .unmask(0)
   .clip(GEOM);
-
-
 
 
 var labels = getLabelImage(GEOM);
@@ -122,8 +79,6 @@ var imgForSample = labels
   .addBands(landforms)
   .toFloat()
   .addBands(labels, null, true);
-
-
 
 
 print('=== MCTNet GEE — California Topography Covariates (SRTM) ===');
@@ -142,8 +97,6 @@ print(elevStats);
 print('');
 
 
-
-
 var samples = imgForSample.stratifiedSample({
   numPoints   : 0,
   classBand   : 'crop_label',
@@ -156,8 +109,6 @@ var samples = imgForSample.stratifiedSample({
   geometries  : true,
   tileScale   : 16
 });
-
-
 
 
 print('Points extraits :', samples.size());
@@ -176,8 +127,6 @@ print('Exemple valeurs (5 points) :');
 print(samples.limit(5));
 
 
-
-
 Export.table.toDrive({
   collection     : samples,
   description    : 'CAL_TOPO_Z' + zStr,
@@ -185,8 +134,6 @@ Export.table.toDrive({
   fileNamePrefix : 'CAL_TOPO_Z' + zStr,
   fileFormat     : 'CSV'
 });
-
-
 
 
 Map.centerObject(GEOM, 8);
@@ -217,13 +164,5 @@ if (ZONE_INDEX === 0) {
   print('🏁 Les deux zones extraites !');
   print('   CAL_TOPO_Z0 : 5720 pts  |  CAL_TOPO_Z1 : 4300 pts');
 }
-
-
-
-
-
-
-
-
 
 

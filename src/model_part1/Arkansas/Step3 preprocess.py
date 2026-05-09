@@ -1,19 +1,3 @@
-"""
-ÉTAPE 3 — Prétraitement et normalisation
-=========================================
-Entrée  : ARK_dataset.npz
-Sortie  : ARK_dataset_preprocessed.npz
-
-Opérations (conformes au papier) :
-  1. Normalisation min-max par bande spectrale
-     (calculée sur les pixels présents du train set uniquement
-      pour éviter la fuite d'information test→train)
-  2. Construction du masque binaire Input 2 du modèle MCTNet
-     mask[i,t] = 1 si timestep t manquant, 0 sinon (déjà dans dataset.npz)
-  3. Split train / val / test selon Table 2 du papier
-     300 pts/classe → 240 train + 60 val | reste → test
-  4. Sauvegarde des indices de split pour reproductibilité
-"""
 
 import numpy as np
 import os
@@ -30,7 +14,6 @@ N_TRAIN_VAL_PER_CLASS = 300
 TRAIN_RATIO           = 0.8    
 
 
-
 def load_data():
     data = np.load(INPUT_FILE)
     X    = data['X']       
@@ -40,13 +23,7 @@ def load_data():
     return X, y, mask
 
 
-
 def make_split(y, seed=RANDOM_SEED):
-    """
-    Papier : "300 samples per crop type were randomly selected to compose
-    the training and validation datasets (with a rate of 8:2), and
-    the rest samples were used for testing."
-    """
     rng = np.random.default_rng(seed)
     train_idx, val_idx, test_idx = [], [], []
 
@@ -57,11 +34,11 @@ def make_split(y, seed=RANDOM_SEED):
         idx_class = np.where(y == lbl)[0]
         n = len(idx_class)
 
-        
+
         perm = rng.permutation(n)
         idx_class = idx_class[perm]
 
-        
+
         n_tv  = min(N_TRAIN_VAL_PER_CLASS, n)
         n_tr  = int(n_tv * TRAIN_RATIO)     
         n_val = n_tv - n_tr                 
@@ -83,31 +60,23 @@ def make_split(y, seed=RANDOM_SEED):
     return train_idx, val_idx, test_idx
 
 
-
 def normalize(X, train_idx, mask):
-    """
-    Normalisation min-max par bande, calculée UNIQUEMENT sur le train set
-    et sur les pixels présents (mask=0) pour éviter la fuite d'information.
-
-    Formule : X_norm = (X - X_min) / (X_max - X_min)
-    Valeurs manquantes (X=0 et mask=1) → restent à 0 après normalisation.
-    """
     print("\n── Normalisation min-max ───────────────────────────")
     X_norm = np.zeros_like(X, dtype=np.float32)
     band_stats = []   
 
-    
+
     X_train = X[train_idx]            
     mask_train = mask[train_idx]       
 
     for b in range(10):
-        
+
         vals_train = X_train[:, :, b][mask_train == 0]
         b_min = float(vals_train.min())
         b_max = float(vals_train.max())
         band_stats.append({'band': BAND_NAMES[b], 'min': b_min, 'max': b_max})
 
-        
+
         denom = b_max - b_min if b_max > b_min else 1.0
         X_norm[:, :, b] = np.where(
             mask == 0,                          
@@ -134,22 +103,20 @@ def main():
     print("Étape 3 — Prétraitement et normalisation")
     print("=" * 55 + "\n")
 
-    
+
     X, y, mask = load_data()
 
-    
+
     train_idx, val_idx, test_idx = make_split(y)
 
-    
+
     X_norm, band_stats = normalize(X, train_idx, mask)
     print_normalized_stats(X_norm, mask)
 
-    
-    
-    
+
     input2 = mask.astype(np.float32)   
 
-    
+
     X_train = X_norm[train_idx]      
     X_val   = X_norm[val_idx]        
     X_test  = X_norm[test_idx]       
@@ -165,12 +132,12 @@ def main():
     print(f"  X_val   : {X_val.shape}     y_val   : {y_val.shape}")
     print(f"  X_test  : {X_test.shape}    y_test  : {y_test.shape}")
 
-    
+
     print(f"\n  Bandes band_stats (min/max train set) :")
     for s in band_stats:
         print(f"    {s['band']:4s} : [{s['min']:.0f}, {s['max']:.0f}]")
 
-    
+
     np.savez_compressed(
         OUTPUT_FILE,
         X_train=X_train, y_train=y_train, mask_train=m_train,
@@ -179,7 +146,7 @@ def main():
         train_idx=train_idx,
         val_idx=val_idx,
         test_idx=test_idx,
-        
+
         X_all=X_norm, y_all=y, mask_all=input2,
     )
     size_mb = os.path.getsize(OUTPUT_FILE) / 1e6

@@ -1,14 +1,8 @@
-"""
-MCTNet — Climate Covariates v3 — TIMESTEP — Arkansas
-Lance les 72 exports GEE en boucle (36 timesteps × 2 zones)
-"""
 
 import ee
 import time
 
 ee.Initialize(project='sentinel-2-491600')
-
-
 
 
 YEAR         = 2021
@@ -26,8 +20,6 @@ CDL_CORN    = 1
 CDL_COTTON  = 2
 CDL_RICE    = 3
 CDL_SOYBEAN = 5
-
-
 
 
 def window_dates(t, year):
@@ -95,9 +87,6 @@ def get_climate_composite(geom, start, end):
              .unmask(0).clip(geom))
 
     return temp.addBands(vpd).addBands(solar).toFloat()
-
-
-
 
 
 tasks = []

@@ -1,7 +1,3 @@
-"""
-STEP 2 - Improved Part 3 model for California
-=============================================
-"""
 
 import math
 import torch

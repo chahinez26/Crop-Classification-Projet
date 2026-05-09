@@ -1,11 +1,3 @@
-"""
-STEP 5 - Ensemble Part 1 + Part 3 for Arkansas
-==============================================
-Goal:
-  - combine the strong Part 1 MCTNet and the improved Part 3 model
-  - search the best fusion weight on the validation set
-  - evaluate the selected ensemble on the Arkansas test set
-"""
 
 import json
 import os

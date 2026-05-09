@@ -1,22 +1,6 @@
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 var ZONE_INDEX = 0;   
-
-
-
 
 
 var CDL_CONF     = 95;
@@ -36,8 +20,6 @@ var ZONES = [
 
 var GEOM = ZONES[ZONE_INDEX];
 var zStr = '' + ZONE_INDEX;
-
-
 
 
 function getLabelImage(geom) {
@@ -69,9 +51,6 @@ function getLabelImage(geom) {
 }
 
 
-
-
-
 var gridmet = ee.ImageCollection('IDAHO_EPSCOR/GRIDMET')
   .filterDate('2021-01-01', '2022-01-01')
   .filterBounds(GEOM);
@@ -80,9 +59,6 @@ var gridmet = ee.ImageCollection('IDAHO_EPSCOR/GRIDMET')
 print('=== MCTNet GEE — Climate Covariates v2 (GRIDMET) ===');
 print('Zone    : Z' + zStr);
 print('Images GRIDMET 2021 disponibles :', gridmet.size());
-
-
-
 
 
 var temp_mean = gridmet
@@ -99,13 +75,11 @@ var temp_mean = gridmet
   .clip(GEOM);
 
 
-
 var precip_total = gridmet
   .select('pr')
   .sum()                         
   .rename('precip_total')
   .clip(GEOM);
-
 
 
 var solar_mean = gridmet
@@ -115,8 +89,6 @@ var solar_mean = gridmet
   .clip(GEOM);
 
 
-
-
 var labels = getLabelImage(GEOM);
 
 var imgForSample = labels
@@ -124,11 +96,8 @@ var imgForSample = labels
   .addBands(precip_total)
   .addBands(solar_mean)
   .toFloat()
-  
+
   .addBands(labels, null, true);
-
-
-
 
 
 print('');
@@ -150,8 +119,6 @@ var samples = imgForSample.stratifiedSample({
 });
 
 
-
-
 print('Points extraits :', samples.size());
 print('');
 
@@ -168,8 +135,6 @@ print('Vérification valeurs (5 premiers points) :');
 print(samples.limit(5));
 
 
-
-
 Export.table.toDrive({
   collection     : samples,
   description    : 'ARK_CLIMATE_Z' + zStr,
@@ -177,8 +142,6 @@ Export.table.toDrive({
   fileNamePrefix : 'ARK_CLIMATE_Z' + zStr,
   fileFormat     : 'CSV'
 });
-
-
 
 
 Map.centerObject(GEOM, 9);
@@ -209,14 +172,5 @@ if (ZONE_INDEX === 0) {
 } else {
   print('🏁 Les deux zones extraites !');
 }
-
-
-
-
-
-
-
-
-
 
 

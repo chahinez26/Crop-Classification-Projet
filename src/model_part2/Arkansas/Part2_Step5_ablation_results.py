@@ -1,9 +1,3 @@
-"""
-PART 2 — ÉTAPE 5 : Visualisation des résultats d'ablation
-==========================================================
-Entrée  : ablation_results.json + ablation_histories.npz
-Sorties : figures/part2/ — 4 figures
-"""
 
 import numpy as np
 import matplotlib.pyplot as plt

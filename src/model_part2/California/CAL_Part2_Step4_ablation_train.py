@@ -1,18 +1,3 @@
-"""
-PART 2 — ÉTAPE 4 : Entraînement des 5 configurations d'ablation — California
-=============================================================================
-C1 : S2 seulement          → MCTNet baseline
-C2 : S2 + Climat  (3 cov)  → temp_mean, precip_total, solar_mean
-C3 : S2 + Sol     (3 cov)  → soil_ph, soil_oc, soil_texture
-C4 : S2 + Topo    (2 cov)  → elevation, landforms
-C5 : S2 + Tout    (8 cov)  → toutes covariables
-
-6 classes California :
-  Grapes=0, Rice=1, Alfalfa=2, Almonds=3, Pistachios=4, Others=5
-
-Métriques cibles Part 1 (papier Table 5) :
-  MCTNet baseline : OA=0.852, Kappa=0.806, F1=0.829
-"""
 
 import numpy as np
 import torch
@@ -212,7 +197,7 @@ def main():
         print(f"\n  TEST → OA={metrics['OA']:.4f}  "
               f"Kappa={metrics['Kappa']:.4f}  F1={metrics['F1']:.4f}")
 
-    
+
     print(f"\n\n{'='*65}")
     print("RÉSUMÉ ABLATION — California (Part 2)")
     print(f"{'='*65}")
@@ -229,7 +214,7 @@ def main():
     print(f"\n  ★ Best : {all_results[best_k]['label']}  "
           f"(Δ={all_results[best_k]['OA']-base:+.4f})")
 
-    
+
     res_f = os.path.join(RESULTS_DIR, 'ablation_results.json')
     with open(res_f, 'w') as f:
         json.dump(all_results, f, indent=2)

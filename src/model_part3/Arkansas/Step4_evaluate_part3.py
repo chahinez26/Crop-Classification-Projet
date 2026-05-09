@@ -1,14 +1,3 @@
-"""
-STEP 4 - Evaluate Part 3 model on Arkansas
-==========================================
-
-Default behavior:
-  - without arguments, evaluates the default checkpoint produced by Step3
-  - the recommended default training seed is now 777 because it gave the
-    best single-model Arkansas result in our experiments
-  - this script reports the best single-model Part 3 result, not the old
-    ensemble result
-"""
 
 import json
 import os

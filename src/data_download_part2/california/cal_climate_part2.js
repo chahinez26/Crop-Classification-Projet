@@ -1,12 +1,7 @@
 
 
-
-
 var ZONE_INDEX = 0;   
 var T_INDEX    = 0;   
-
-
-
 
 
 var YEAR       = 2021;
@@ -36,9 +31,6 @@ var tStr         = (T_INDEX + 1) < 10 ? '0' + (T_INDEX + 1) : '' + (T_INDEX + 1)
 var N_EXPECTED   = (ZONE_INDEX === 0) ? 5720 : 4300;
 
 
-
-
-
 function windowDates(t, year) {
   var m    = Math.floor(t / 3);
   var w    = t % 3;
@@ -51,8 +43,6 @@ function windowDates(t, year) {
   if (w === 1) return [year + '-' + mStr + '-11', year + '-' + mStr + '-21'];
   return [year + '-' + mStr + '-21', nxt];
 }
-
-
 
 
 function getLabelImage(geom) {
@@ -88,15 +78,12 @@ function getLabelImage(geom) {
 }
 
 
-
-
-
 function getClimateComposite(geom, start, end) {
   var gridmet = ee.ImageCollection('IDAHO_EPSCOR/GRIDMET')
     .filterDate(start, end)
     .filterBounds(geom);
 
-  
+
   var temp = gridmet
     .select(['tmmx', 'tmmn'])
     .map(function(img) {
@@ -110,11 +97,7 @@ function getClimateComposite(geom, start, end) {
     .unmask(0)
     .clip(geom);
 
-  
-  
-  
-  
-  
+
   var vpd = gridmet
     .select('vpd')
     .mean()
@@ -122,7 +105,7 @@ function getClimateComposite(geom, start, end) {
     .unmask(0)
     .clip(geom);
 
-  
+
   var solar = gridmet
     .select('srad')
     .mean()
@@ -132,8 +115,6 @@ function getClimateComposite(geom, start, end) {
 
   return temp.addBands(vpd).addBands(solar).toFloat();
 }
-
-
 
 
 var dates    = windowDates(T_INDEX, YEAR);
@@ -163,14 +144,7 @@ print('Stats VPD T' + tStr + ' Z' + zStr + ' (kPa) :');
 print(vpdStats);
 
 
-
-
-
 var imgForSample = climComp.addBands(labels);
-
-
-
-
 
 
 var samples = imgForSample.stratifiedSample({
@@ -185,8 +159,6 @@ var samples = imgForSample.stratifiedSample({
   geometries  : true,
   tileScale   : 16
 });
-
-
 
 
 print('Points extraits :', samples.size());
@@ -205,9 +177,6 @@ print('');
 print('Points temp_mean = 0 (anomalie) :', n_temp_zero);
 
 
-
-
-
 Export.table.toDrive({
   collection     : samples,
   description    : 'CAL_CLIM_T' + tStr + '_Z' + zStr,
@@ -215,8 +184,6 @@ Export.table.toDrive({
   fileNamePrefix : 'CAL_CLIM_T' + tStr + '_Z' + zStr,
   fileFormat     : 'CSV'
 });
-
-
 
 
 Map.centerObject(GEOM, 8);
@@ -254,17 +221,5 @@ if (ZONE_INDEX === 0) {
     print('   → python Part2_Step1_merge_climate_timestep_california.py');
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 

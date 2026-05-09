@@ -1,7 +1,3 @@
-"""
-STEP 5 - Ensemble Part 1 + Part 3 for California
-================================================
-"""
 
 import json
 import os

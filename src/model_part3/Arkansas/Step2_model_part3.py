@@ -1,14 +1,3 @@
-"""
-STEP 2 - Improved Part 3 model for Arkansas
-===========================================
-Version v3:
-  - stays close to the strong MCTNet baseline
-  - uses 15 input features: 10 Sentinel-2 bands + 5 vegetation indices
-  - adds a lightweight feature-attention gate before the MCTNet backbone
-
-This is a safer Part 3 design than the previous attempts because it preserves
-the baseline architecture that already worked well on Arkansas.
-"""
 
 import math
 import torch

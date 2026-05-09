@@ -1,19 +1,8 @@
-"""
-ÉTAPE 5 — MCTNet California
-============================
-Architecture identique à Arkansas.
-Seul changement : n_classes=6 (Grapes, Rice, Alfalfa, Almonds, Pistachios, Others)
-
-Ce fichier est autonome : il peut être importé par CAL_Step6_train.py
-"""
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import math
-
-
-
 
 
 class ECA(nn.Module):
@@ -29,9 +18,6 @@ class ECA(nn.Module):
         y = self.conv(y.transpose(1, 2))
         y = self.sigmoid(y)
         return x * y
-
-
-
 
 
 class ALPE(nn.Module):
@@ -64,9 +50,6 @@ class ALPE(nn.Module):
         return x + pe_final
 
 
-
-
-
 class TransformerSubmodule(nn.Module):
     def __init__(self, d_model=30, n_head=5, use_alpe=False,
                  kernel_size=3, n_timesteps=36, dropout=0.1):
@@ -95,9 +78,6 @@ class TransformerSubmodule(nn.Module):
         return x
 
 
-
-
-
 class CNNSubmodule(nn.Module):
     def __init__(self, d_model=30, kernel_size=3):
         super().__init__()
@@ -117,9 +97,6 @@ class CNNSubmodule(nn.Module):
         return self.relu(out + residual)
 
 
-
-
-
 class CTFusion(nn.Module):
     def __init__(self, d_model=30, n_head=5, kernel_size=3,
                  use_alpe=False, n_timesteps=36, dropout=0.1):
@@ -132,10 +109,6 @@ class CTFusion(nn.Module):
     def forward(self, x, mask=None):
         fused = torch.cat([self.cnn(x), self.transformer(x, mask)], dim=-1)
         return self.fusion(fused)
-
-
-
-
 
 
 class MCTNet(nn.Module):
@@ -178,9 +151,6 @@ class MCTNet(nn.Module):
         return self.classifier(out.max(dim=1).values)
 
 
-
-
-
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
@@ -192,9 +162,8 @@ def build_model(device='cpu'):
     ).to(device)
     n_params = count_parameters(model)
     print(f"MCTNet California — {n_params:,} paramètres entraînables")
-    
-    
-    
+
+
     print(f"  (papier : 55 140 paramètres pour California)")
     diff = abs(n_params - 55140)
     pct  = diff / 55140 * 100

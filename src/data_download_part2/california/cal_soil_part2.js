@@ -1,37 +1,6 @@
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 var ZONE_INDEX = 0;   
-
-
-
 
 
 var CDL_CONF       = 95;
@@ -56,8 +25,6 @@ var CLASS_POINTS = (ZONE_INDEX === 0) ? CLASS_POINTS_Z0 : CLASS_POINTS_Z1;
 var GEOM         = ZONES[ZONE_INDEX];
 var zStr         = '' + ZONE_INDEX;
 var N_EXPECTED   = (ZONE_INDEX === 0) ? 5720 : 4300;
-
-
 
 
 function getLabelImage(geom) {
@@ -93,11 +60,6 @@ function getLabelImage(geom) {
 }
 
 
-
-
-
-
-
 var soil_ph = ee.Image('OpenLandMap/SOL/SOL_PH-H2O_USDA-4C1A2A_M/v02')
   .select('b0').rename('soil_ph')
   .unmask(-1).clip(GEOM);
@@ -118,8 +80,6 @@ var slope = ee.Terrain.slope(ee.Image('USGS/SRTMGL1_003'))
   .clip(GEOM);
 
 
-
-
 var labels = getLabelImage(GEOM);
 
 var imgForSample = labels
@@ -128,8 +88,6 @@ var imgForSample = labels
   .addBands(soil_texture)
   .toFloat()
   .addBands(labels, null, true);
-
-
 
 
 print('=== MCTNet GEE — California Soil Covariates (OpenLandMap) ===');
@@ -145,10 +103,7 @@ print('Statistiques soil_ph Z' + zStr + ' (brut ×10) :');
 print(phStats);
 
 
-
 print('');
-
-
 
 
 var samples = imgForSample.stratifiedSample({
@@ -163,8 +118,6 @@ var samples = imgForSample.stratifiedSample({
   geometries  : true,
   tileScale   : 16
 });
-
-
 
 
 print('Points extraits :', samples.size());
@@ -187,9 +140,6 @@ print('Nulls soil_oc :', n_oc_null);
 print('Nulls soil_tx :', n_tx_null);
 
 
-
-
-
 Export.table.toDrive({
   collection     : samples,
   description    : 'CAL_SOIL_Z' + zStr,
@@ -197,8 +147,6 @@ Export.table.toDrive({
   fileNamePrefix : 'CAL_SOIL_Z' + zStr,
   fileFormat     : 'CSV'
 });
-
-
 
 
 Map.centerObject(GEOM, 8);
@@ -232,14 +180,5 @@ if (ZONE_INDEX === 0) {
 } else {
   print('🏁 Les deux zones extraites !');
 }
-
-
-
-
-
-
-
-
-
 
 

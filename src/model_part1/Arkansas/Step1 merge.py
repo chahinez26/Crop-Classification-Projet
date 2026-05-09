@@ -20,7 +20,6 @@ def parse_geo(geo_str):
 
 
 def load_cdl():
-    """Charge les points de référence (index → label, lon, lat, zone)."""
     print("── Chargement CDL ──────────────────────────────────")
     ref = {}   
     for z in ZONES:
@@ -44,7 +43,6 @@ def load_cdl():
 
 
 def build_index_order(ref):   
-    """Trie les clés (zone, system:index) pour aligner les matrices X, y, mask."""
     z0 = sorted([(int(k[1]), k) for k in ref if k[0] == 0])
     z1 = sorted([(int(k[1]), k) for k in ref if k[0] == 1])
     ordered_keys = [k for _, k in z0] + [k for _, k in z1]
@@ -53,14 +51,13 @@ def build_index_order(ref):
 
 
 def load_spectral(t_idx, zone, key_to_row, X, mask):
-    """Remplit X[i, t, :] et mask[i, t] depuis un fichier T**_Z*.csv."""
     t_str = f"{t_idx+1:02d}"
     fpath = os.path.join(INPUT_DIR, f"ARK_T{t_str}_Z{zone}.csv")
     matched, missing_count = 0, 0
 
     if not os.path.exists(fpath):
         print(f"  ⚠  ARK_T{t_str}_Z{zone}.csv absent → timestep entier = 0 (missing)")
-        
+
         return
 
     with open(fpath, newline='', encoding='utf-8') as f:
@@ -91,19 +88,19 @@ def main():
         print("   Place tous les CSV GEE dans ce dossier.")
         return
 
-    
+
     ref = load_cdl()
     ordered_keys, key_to_row = build_index_order(ref)
     N = len(ordered_keys)
 
-    
+
     X    = np.zeros((N, N_TIMESTEPS, 10), dtype=np.float32)
     y    = np.array([ref[k]['label'] for k in ordered_keys], dtype=np.int32)
     mask = np.ones((N, N_TIMESTEPS), dtype=np.uint8)   
     lons = np.array([ref[k]['lon'] for k in ordered_keys], dtype=np.float64)
     lats = np.array([ref[k]['lat'] for k in ordered_keys], dtype=np.float64)
 
-    
+
     print("── Extraction spectrale ────────────────────────────")
     for t in range(N_TIMESTEPS):
         t_str = f"{t+1:02d}"
@@ -118,7 +115,7 @@ def main():
         print(f"  T{t_str} : {total_matched:5d} pts avec données | "
               f"{int(mask[:,t].sum()):4d} missing ({miss_pct:.1f}%)")
 
-    
+
     print("\n── Résumé ──────────────────────────────────────────")
     print(f"  X    : {X.shape}  float32")
     print(f"  y    : {y.shape}  int32")
@@ -131,7 +128,7 @@ def main():
     print(f"    {'TOTAL':8s} : {N:5d}  (papier: 10000)")
     print(f"\n  Missing global : {100*mask.mean():.1f}%")
 
-    
+
     np.savez_compressed(OUTPUT_FILE,
                         X=X, y=y, mask=mask, lons=lons, lats=lats)
     size_mb = os.path.getsize(OUTPUT_FILE) / 1e6

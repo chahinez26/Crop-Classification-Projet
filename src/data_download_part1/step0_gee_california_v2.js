@@ -1,49 +1,8 @@
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 var MODE       = 'CDL_SAMPLE';  
 var ZONE_INDEX = 0;              
 var T_INDEX    = 0;              
-
-
-
 
 
 var YEAR       = 2021;
@@ -54,7 +13,6 @@ var BAND_NAMES = ['B02','B03','B04','B05','B06','B07','B08','B8A','B11','B12'];
 
 
 var CLASS_VALUES = [0, 1, 2, 3, 4, 5];
-
 
 
 var CLASS_POINTS_Z0 = [1030, 2030, 490, 390, 20, 1760];
@@ -70,34 +28,17 @@ var CDL_ALMONDS    = 75;
 var CDL_PISTACHIOS = 77;
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 var ZONES = [
-  
+
   ee.Geometry.Rectangle([-122.50, 37.50, -119.80, 40.50]),
 
-  
+
   ee.Geometry.Rectangle([-121.00, 34.50, -118.50, 37.50])
 ];
 
 
 var CLASS_POINTS = (ZONE_INDEX === 0) ? CLASS_POINTS_Z0 : CLASS_POINTS_Z1;
 var GEOM         = ZONES[ZONE_INDEX];
-
-
-
 
 
 function windowDates(t, year) {
@@ -168,8 +109,6 @@ function getLabelImage(geom) {
 }
 
 
-
-
 var tStr   = (T_INDEX + 1) < 10 ? '0' + (T_INDEX + 1) : '' + (T_INDEX + 1);
 var zStr   = '' + ZONE_INDEX;
 var dates  = windowDates(T_INDEX, YEAR);
@@ -189,8 +128,6 @@ if (MODE === 'SPECTRAL') {
   print('Timestep  : T' + tStr + '  (' + dates[0] + ' → ' + dates[1] + ')');
 }
 print('');
-
-
 
 
 if (MODE === 'CDL_SAMPLE') {
@@ -259,8 +196,6 @@ if (MODE === 'CDL_SAMPLE') {
   }
 
 
-
-
 } else if (MODE === 'SPECTRAL') {
 
   print('→ Composite Sentinel-2 T' + tStr);
@@ -323,30 +258,5 @@ if (MODE === 'CDL_SAMPLE') {
 } else {
   print('❌ MODE inconnu : "' + MODE + '"');
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
