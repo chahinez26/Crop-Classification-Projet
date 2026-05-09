@@ -1,48 +1,9 @@
-// =============================================================================
-// MCTNet GEE — SCRIPT v5 — FIX stratifiedSample
-// Wang et al. 2024 — Computers and Electronics in Agriculture
-//
-// PROBLÈME v4 RÉSOLU :
-//   .sample(numPixels=10000) sur grande zone → GEE sous-échantillonne
-//   par tuile interne → seulement ~3000-4000 points retournés
-//
-// SOLUTION v5 :
-//   .stratifiedSample(classValues, classPoints) → GEE est FORCÉ
-//   de trouver exactement N points par classe dans toute la zone
-//   → garantit 10 000 points avec la distribution exacte du papier
-//
-// PAPIER (Table 2) — Distribution Arkansas (10 000 points total) :
-//   Soybean : 4677 (46.8%)
-//   Rice    : 2423 (24.2%)
-//   Corn    : 1522 (15.2%)
-//   Cotton  :  762 ( 7.6%)
-//   Others  :  616 ( 6.2%)
-//   TOTAL   : 10000
-//
-//   Par zone (÷2) :
-//   Soybean : 2340  Rice : 1210  Corn : 760  Cotton : 380  Others : 310
-//   TOTAL par zone : 5000 × 2 zones = 10 000 ✅
-//
-// PROCÉDURE :
-//   ÉTAPE 1 (2 runs) : MODE='CDL_SAMPLE'
-//     → Z0 puis Z1 → ARK_CDL_Z0.csv, ARK_CDL_Z1.csv
-//   ÉTAPE 2 (72 runs) : MODE='SPECTRAL', T_INDEX=0..35, ZONE_INDEX=0 et 1
-//     → ARK_T01_Z0.csv ... ARK_T36_Z1.csv
-// =============================================================================
 
-// ════════════════════════════════════════════════════════════════════════════
-// ▶ CHANGER CES VARIABLES À CHAQUE RUN
-// ════════════════════════════════════════════════════════════════════════════
-var MODE       = 'CDL_SAMPLE';  // 'CDL_SAMPLE' ou 'SPECTRAL'
-var ZONE_INDEX = 0;              // 0 ou 1
-var T_INDEX    = 0;              // 0 à 35 (seulement pour MODE='SPECTRAL')
-// ════════════════════════════════════════════════════════════════════════════
-
-// =============================================================================
-// PARAMÈTRES FIXES
-// =============================================================================
+var MODE       = 'CDL_SAMPLE';  
+var ZONE_INDEX = 0;              
+var T_INDEX    = 0;              
 var YEAR       = 2021;
-var CDL_CONF   = 95;        // papier : "95% confidence"
+var CDL_CONF   = 95;        
 var FOLDER     = 'MCTNet_v5';
 var S2_BANDS   = ['B2','B3','B4','B5','B6','B7','B8','B8A','B11','B12'];
 var BAND_NAMES = ['B02','B03','B04','B05','B06','B07','B08','B8A','B11','B12'];
@@ -190,7 +151,7 @@ if (MODE === 'CDL_SAMPLE') {
   // seed: 42    : reproductibilité
   // geometries: true : garder coordonnées lon/lat
   var points = labels.stratifiedSample({
-    numPoints   : 0,                // ignoré quand classPoints est fourni
+    numPoints   : 0,                
     classBand   : 'crop_label',
     region      : GEOM,
     scale       : 30,

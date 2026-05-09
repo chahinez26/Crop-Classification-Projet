@@ -14,7 +14,7 @@ from sklearn.decomposition import PCA
 from sklearn.ensemble import RandomForestClassifier
 from scipy import stats as sp_stats
 
-# ── Configuration ──────────────────────────────────────────────────────────
+
 COV_FILE = r"data\merged_npz\arkansas\ARK_covariates_v2.npz"
 FIG_DIR  = r"outputs\figures\arkansas\part2"
 
@@ -29,7 +29,7 @@ SOIL_COLS   = ['soil_ph', 'soil_oc', 'soil_texture']
 TOPO_COLS   = ['elevation', 'landforms']
 STATIC_COLS = SOIL_COLS + TOPO_COLS
 
-# ── FEATURE_INFO : clé → (label affiché, groupe) ──────────────────────────
+
 FEATURE_INFO = {
     'temp_mean'    : ('T° moyenne (°C)',     'Climat'),
     'precip_total' : ('Précip. totale (mm)', 'Climat'),
@@ -51,43 +51,43 @@ TIMESTEP_LABELS = [
     'Sep-1','Sep-11','Sep-21','Oct-1','Oct-11','Oct-21',
     'Nov-1','Nov-11','Nov-21','Dec-1','Dec-11','Dec-21',
 ]
-# ──────────────────────────────────────────────────────────────────────────────
+
 
 
 def load_data():
     d = np.load(COV_FILE, allow_pickle=True)
 
-    X_clim_raw = d['X_clim_raw']   # [N, 36, 3]
-    mask_clim  = d['mask_clim']    # [N, 36]
-    X_soil_raw = d['X_soil_raw']   # [N, 3] brut
-    X_topo_raw = d['X_topo_raw']   # [N, 2] brut
-    X_soil     = d['X_soil']       # [N, 3] normalisé
-    X_topo     = d['X_topo']       # [N, 2] normalisé
+    X_clim_raw = d['X_clim_raw']   
+    mask_clim  = d['mask_clim']    
+    X_soil_raw = d['X_soil_raw']   
+    X_topo_raw = d['X_topo_raw']   
+    X_soil     = d['X_soil']       
+    X_topo     = d['X_topo']       
     y          = d['y_all']
     train_idx  = d['train_idx']
     test_idx   = d['test_idx']
 
-    # Moyennes climatiques annuelles [N, 3] (en ignorant les masques nuageux)
+    
     clim_raw = np.stack([
         np.where(mask_clim == 0, X_clim_raw[:, :, b], np.nan).mean(axis=1)
         for b in range(3)
-    ], axis=1)  # [N, 3]
+    ], axis=1)  
 
-    static_raw  = np.concatenate([X_soil_raw, X_topo_raw], axis=1)   # [N, 5]
-    static_norm = np.concatenate([X_soil,     X_topo],     axis=1)   # [N, 5]
+    static_raw  = np.concatenate([X_soil_raw, X_topo_raw], axis=1)   
+    static_norm = np.concatenate([X_soil,     X_topo],     axis=1)   
 
-    # Matrice complète [N, 8] : 3 clim + 5 static
+    
     raw  = np.concatenate([clim_raw,  static_raw],  axis=1)
     norm = np.concatenate([clim_raw,  static_norm], axis=1)
 
-    features = CLIM_COLS + STATIC_COLS   # liste ordonnée des 8 features
+    features = CLIM_COLS + STATIC_COLS   
 
     print(f"Chargé : N={len(y)}  clim={clim_raw.shape}  static={static_raw.shape}  "
           f"total={raw.shape}")
     return raw, norm, y, train_idx, test_idx, features
 
 
-# ── Figure 1 : Distributions par classe ──────────────────────────────────────
+
 def plot_distributions(raw, y, features):
     n_feat = len(features)
     ncols  = 4
@@ -112,7 +112,7 @@ def plot_distributions(raw, y, features):
         ax.tick_params(labelsize=7)
         ax.grid(alpha=0.3)
 
-    # Cacher les axes vides
+    
     for ax in axes[n_feat:]:
         ax.set_visible(False)
 
@@ -130,7 +130,7 @@ def plot_distributions(raw, y, features):
     print(f"✅ {out}")
 
 
-# ── Figure 2 : Boxplots + ANOVA ──────────────────────────────────────────────
+
 def plot_boxplots(raw, y, features):
     n_feat = len(features)
     ncols  = 4
@@ -182,7 +182,7 @@ def plot_boxplots(raw, y, features):
     print(f"✅ {out}")
 
 
-# ── Figure 3 : Matrice de corrélation ────────────────────────────────────────
+
 def plot_correlation(raw, features):
     labels_display = [FEATURE_INFO[f][0] for f in features]
 
@@ -207,12 +207,12 @@ def plot_correlation(raw, features):
     print(f"✅ {out}")
 
 
-# ── Figure 4 : PCA 2D colorée par classe ─────────────────────────────────────
+
 def plot_pca(norm, y):
     rng = np.random.default_rng(42)
     idx = rng.choice(len(y), min(3000, len(y)), replace=False)
 
-    # Ignorer les lignes avec NaN avant la PCA
+    
     sub_norm = norm[idx]
     valid    = np.all(np.isfinite(sub_norm), axis=1)
     sub_norm = sub_norm[valid]
@@ -242,9 +242,9 @@ def plot_pca(norm, y):
     print(f"✅ {out}")
 
 
-# ── Figure 5 : Importance Random Forest ──────────────────────────────────────
+
 def plot_importance(norm, y, train_idx, test_idx, features):
-    # Filtrer les NaN pour le RF
+    
     valid_train = np.all(np.isfinite(norm[train_idx]), axis=1)
     valid_test  = np.all(np.isfinite(norm[test_idx]),  axis=1)
 
@@ -287,7 +287,7 @@ def plot_importance(norm, y, train_idx, test_idx, features):
               f"({FEATURE_INFO[features[i]][1]})")
 
 
-# ── Stats console ─────────────────────────────────────────────────────────────
+
 def print_stats_table(raw, y, features):
     print("\n── Statistiques par classe ────────────────────────────────────────")
     header = f"  {'Feature':15s} " + " ".join(f"{n[:6]:>7s}" for n in CLASS_NAMES)

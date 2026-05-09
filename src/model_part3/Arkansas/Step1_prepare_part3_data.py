@@ -1,28 +1,14 @@
-"""
-STEP 1 - Prepare Arkansas data for Part 3
-=========================================
-Goal:
-  - reuse the Arkansas split from Part 1
-  - enrich Sentinel-2 bands with vegetation indices
-  - normalize all features with train-only statistics
-
-Input files:
-  - root/npz/ARK_dataset.npz
-  - root/npz/ARK_dataset_preprocessed.npz
-
-Output file:
-  - part_3/npz/ARK_part3_dataset.npz
-"""
 
 import os
 import numpy as np
 
 
-ROOT_DIR = r"C:\Users\Stux\OneDrive\Bureau\projet_reseau\MCTNet_v5"
-RAW_FILE = os.path.join(ROOT_DIR, "npz", "ARK_dataset.npz")
-PART1_FILE = os.path.join(ROOT_DIR, "npz", "ARK_dataset_preprocessed.npz")
-OUTPUT_DIR = os.path.join(ROOT_DIR, "part_3", "npz")
-OUTPUT_FILE = os.path.join(OUTPUT_DIR, "ARK_part3_dataset.npz")
+ROOT_DIR = r"CNN_Transformer_Project\crop-classification"
+RAW_FILE = r"data\merged_npz\arkansas\ARK_dataset.npz"
+PART1_FILE = r"data\processed\ARK_dataset_preprocessed.npz"
+OUTPUT_FILE = r"data\merged_npz\arkansas\Part3_ARK_dataset.npz"
+OUTPUT_DIR = r"data\merged_npz\arkansas" 
+
 
 BAND_NAMES = ["B02", "B03", "B04", "B05", "B06", "B07", "B08", "B8A", "B11", "B12"]
 INDEX_NAMES = ["NDVI", "EVI", "NDWI", "GNDVI", "NDRE"]
@@ -30,10 +16,6 @@ FEATURE_NAMES = BAND_NAMES + INDEX_NAMES
 
 
 def compute_indices(x_raw, mask):
-    """
-    x_raw: [N, T, 10] raw Sentinel-2 values
-    mask : [N, T] with 1=missing
-    """
     refl = x_raw.astype(np.float32) / 10000.0
 
     blue = refl[:, :, 0]
@@ -65,7 +47,7 @@ def normalize_features(x_full, train_idx, mask):
     mask_train = mask[train_idx]
 
     for feat_idx, feat_name in enumerate(FEATURE_NAMES):
-        ##### normalisation
+        
         vals_train = x_train[:, :, feat_idx][mask_train == 0]
         feat_min = float(vals_train.min())
         feat_max = float(vals_train.max())

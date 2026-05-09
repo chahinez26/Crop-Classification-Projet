@@ -21,7 +21,7 @@ from sklearn.decomposition import PCA
 from sklearn.ensemble import RandomForestClassifier
 from scipy import stats as sp_stats
 
-# ── Configuration ──────────────────────────────────────────────────────────
+
 COV_FILE = r"data\processed\CAL_covariates_v2.npz"
 FIG_DIR  = r"outputs\figures\california\part2"
 
@@ -31,10 +31,10 @@ CLASS_NAMES  = ['Grapes', 'Rice', 'Alfalfa', 'Almonds', 'Pistachios', 'Others']
 CLASS_COLORS = ['#9400D3', '#2196F3', '#FF9800', '#8B4513', '#4CAF50', '#9E9E9E']
 N_CLASSES    = 6
 
-# Noms et labels d'affichage pour les 8 features
+
 FEATURE_INFO = {
     'temp_mean'    : ('Température moy.\n(°C)',       'Climat'),
-    'vpd_mean'     : ('VPD moyen\n(kPa)',             'Climat'),  # ← modifié
+    'vpd_mean'     : ('VPD moyen\n(kPa)',             'Climat'),  
     'solar_mean'   : ('Rayonnement\nsolaire (W/m²)',  'Climat'),
     'soil_ph'      : ('pH Sol',                       'Sol'),
     'soil_oc'      : ('Carbone\norganique (g/kg)',    'Sol'),
@@ -43,40 +43,45 @@ FEATURE_INFO = {
     'landforms'    : ('Landforms\n(Weiss 21-42)',     'Topo'),
 }
 GROUP_COLORS = {'Climat': '#1f77b4', 'Sol': '#8c564b', 'Topo': '#7f7f7f'}
-# ───────────────────────────────────────────────────────────────────────────
+
 
 
 def load_data():
     data = np.load(COV_FILE, allow_pickle=True)
 
-    # Clés correctes — identiques à ce que sauvegarde merge_covariables
-    X_clim_raw = data['X_clim_raw']   # [N, 36, 3]
-    mask_clim  = data['mask_clim']    # [N, 36]
-    X_soil_raw = data['X_soil_raw']   # [N, 3]
-    X_topo_raw = data['X_topo_raw']   # [N, 2]
-    cov_all_norm = np.concatenate([
-        data['X_soil'],
-        data['X_topo']
-    ], axis=1)                         # [N, 5] normalisé statique
-    y          = data['y_all']
-    train_idx  = data['train_idx']
+    X_clim_raw  = data['X_clim_raw']
+    X_clim_norm = data['X_clim']
+    mask_clim   = data['mask_clim']
+    X_soil_raw  = data['X_soil_raw']
+    X_topo_raw  = data['X_topo_raw']
 
-    # Moyennes climatiques annuelles [N, 3] pour l'EDA statique
+    y         = data['y_all']
+    train_idx = data['train_idx']
+
     clim_raw = np.stack([
         np.where(mask_clim == 0, X_clim_raw[:, :, b], np.nan).mean(axis=1)
         for b in range(3)
     ], axis=1)
 
-    # Matrice complète [N, 8] : 3 clim + 3 sol + 2 topo
+    clim_norm = np.stack([
+        np.where(mask_clim == 0, X_clim_norm[:, :, b], np.nan).mean(axis=1)
+        for b in range(3)
+    ], axis=1)
+
     all_raw = np.concatenate([clim_raw, X_soil_raw, X_topo_raw], axis=1)
+
+    cov_all_norm = np.concatenate([
+        clim_norm,
+        data['X_soil'],
+        data['X_topo']
+    ], axis=1)
+
     all_features = list(FEATURE_INFO.keys())
 
-    print(f"Chargé : {len(y)} points  |  {all_raw.shape[1]} covariables")
-    print(f"Distribution : { {CLASS_NAMES[i]: int((y==i).sum()) for i in range(N_CLASSES)} }")
     return all_raw, cov_all_norm, y, train_idx, all_features
 
 
-# ── Figure 1 : Distributions par classe ──────────────────────────────────
+
 def plot_distributions(raw, y, features):
     fig, axes = plt.subplots(2, 4, figsize=(16, 9))
     axes = axes.flatten()
@@ -115,7 +120,7 @@ def plot_distributions(raw, y, features):
     print(f"✅ {out}")
 
 
-# ── Figure 2 : Boxplots par classe ───────────────────────────────────────
+
 def plot_boxplots(raw, y, features):
     fig, axes = plt.subplots(2, 4, figsize=(16, 9))
     axes = axes.flatten()
@@ -141,7 +146,7 @@ def plot_boxplots(raw, y, features):
         ax.tick_params(labelsize=7)
         ax.grid(axis='y', alpha=0.3)
 
-        # ANOVA p-value
+        
         try:
             f_stat, p_val = sp_stats.f_oneway(*data_by_class)
             sig = '***' if p_val < 0.001 else ('**' if p_val < 0.01 else
@@ -161,7 +166,7 @@ def plot_boxplots(raw, y, features):
     print(f"✅ {out}")
 
 
-# ── Figure 3 : Matrice de corrélation ────────────────────────────────────
+
 def plot_correlation(raw, features):
     labels_display = [FEATURE_INFO[f][0].replace('\n', ' ') for f in features]
 
@@ -186,7 +191,7 @@ def plot_correlation(raw, features):
     print(f"✅ {out}")
 
 
-# ── Figure 4 : PCA 2D colorée par classe ────────────────────────────────
+
 def plot_pca(cov_norm, y):
     rng = np.random.default_rng(42)
     idx = rng.choice(len(y), min(3000, len(y)), replace=False)
@@ -214,7 +219,7 @@ def plot_pca(cov_norm, y):
     print(f"✅ {out}")
 
 
-# ── Figure 5 : Importance Random Forest ──────────────────────────────────
+
 def plot_importance(cov_norm, y, train_idx, features):
     rf = RandomForestClassifier(n_estimators=300, random_state=42, n_jobs=-1)
     rf.fit(cov_norm[train_idx], y[train_idx])

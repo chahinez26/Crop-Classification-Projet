@@ -1,6 +1,6 @@
 import json, csv, numpy as np
 
-# Adapter ce chemin
+
 CSV_DIR = r"data\raw\covariables\california"
 fname   = "CAL_CLIMATE_Z0.csv"
 

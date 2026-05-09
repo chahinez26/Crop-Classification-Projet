@@ -43,7 +43,7 @@ class MCTNetCov(nn.Module):
         super().__init__()
         self.n_cov = n_cov
 
-        # Backbone MCTNet
+        
         self.input_embedding = nn.Linear(n_bands, d_model)
         self.stages = nn.ModuleList()
         t = n_timesteps
@@ -55,10 +55,10 @@ class MCTNetCov(nn.Module):
             t = t // 2
         self.pool = nn.MaxPool1d(kernel_size=2, stride=2)
 
-        # Encodeur covariables
+        
         self.cov_encoder = CovariateEncoder(n_cov, d_cov, dropout)
 
-        # Classificateur fusion
+        
         self.classifier = nn.Sequential(
             nn.Linear(d_model + d_cov, 64),
             nn.ReLU(),
@@ -100,8 +100,7 @@ if __name__ == "__main__":
         m.eval()
         x, mask = torch.randn(B,36,10).to(device), torch.zeros(B,36).to(device)
         with torch.no_grad():
-            out = m(x, mask, torch.rand(B,n_cov).to(device)) if n_cov > 0 \
-                  else m(x, mask)
+            out = m(x, mask, torch.rand(B,n_cov).to(device)) if n_cov > 0                  else m(x, mask)
         print(f"✅ {name:12s} n_cov={n_cov} params={count_parameters(m):,} "
               f"out={list(out.shape)}")
     print("\n→ Lancer : python Part2_Step4_ablation_train.py")

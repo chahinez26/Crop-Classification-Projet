@@ -22,8 +22,8 @@ PART1_DIR = os.path.join(ROOT_DIR, "California", "part_1", "MCTNet_California_v2
 PART3_DIR = os.path.join(ROOT_DIR, "California", "part_3")
 
 sys.path.insert(0, PART1_DIR)
-from CAL_Step5_mctnet import MCTNet  # noqa: E402
-from Step2_model_part3_cal import Part3CaliforniaNet  # noqa: E402
+from CAL_Step5_mctnet import MCTNet  
+from Step2_model_part3_cal import Part3CaliforniaNet  
 
 
 PART1_DATA_FILE = os.path.join(PART1_DIR, "npz", "CAL_dataset_preprocessed.npz")

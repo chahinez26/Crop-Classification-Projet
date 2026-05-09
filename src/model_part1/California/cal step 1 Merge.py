@@ -18,7 +18,7 @@ Papier Table 2 — California :
 import os, json, csv
 import numpy as np
 
-# ── Configuration ──────────────────────────────────────────────
+
 INPUT_DIR   = r"C:\Users\Stux\OneDrive\Bureau\projet_reseau\MCTNet_California_v2"
 OUTPUT_FILE = r"C:\Users\Stux\OneDrive\Bureau\projet_reseau\MCTNet_California_v2\npz\CAL_dataset.npz"
 N_TIMESTEPS = 36
@@ -28,10 +28,10 @@ CLASS_NAMES = {0:'Grapes', 1:'Rice', 2:'Alfalfa',
                3:'Almonds', 4:'Pistachios', 5:'Others'}
 PAPER_DIST  = {0:2054, 1:2037, 2:974, 3:783, 4:640, 5:3512}
 
-# CLASS_POINTS asymétriques (identiques au script GEE v2)
-CLASS_POINTS_Z0 = {0:1030, 1:2030, 2:490, 3:390, 4:20,  5:1760}  # Z0=5720
-CLASS_POINTS_Z1 = {0:1030, 1:10,   2:490, 3:390, 4:620, 5:1760}  # Z1=4300
-# ───────────────────────────────────────────────────────────────
+
+CLASS_POINTS_Z0 = {0:1030, 1:2030, 2:490, 3:390, 4:20,  5:1760}  
+CLASS_POINTS_Z1 = {0:1030, 1:10,   2:490, 3:390, 4:620, 5:1760}  
+
 
 
 def parse_geo(geo_str):
@@ -139,19 +139,19 @@ def main():
         print(f"   Place tous les CSV de MCTNet_California_v2/ dans ce dossier.")
         return
 
-    # 1. Charger les labels CDL
+    
     ref = load_cdl()
     ordered_keys, key_to_row = build_index_order(ref)
     N = len(ordered_keys)
 
-    # 2. Initialiser les matrices
+    
     X    = np.zeros((N, N_TIMESTEPS, 10), dtype=np.float32)
     y    = np.array([ref[k]['label'] for k in ordered_keys], dtype=np.int32)
-    mask = np.ones((N, N_TIMESTEPS), dtype=np.uint8)   # 1=missing par defaut
+    mask = np.ones((N, N_TIMESTEPS), dtype=np.uint8)   
     lons = np.array([ref[k]['lon'] for k in ordered_keys], dtype=np.float64)
     lats = np.array([ref[k]['lat'] for k in ordered_keys], dtype=np.float64)
 
-    # 3. Remplir timestep par timestep
+    
     print("── Extraction spectrale ────────────────────────────")
     for t in range(N_TIMESTEPS):
         t_str = f"{t+1:02d}"
@@ -166,7 +166,7 @@ def main():
         print(f"  T{t_str} : {total_matched:5d} pts avec donnees | "
               f"{miss_n:5d} missing ({miss_pct:.1f}%)")
 
-    # 4. Resume
+    
     print("\n── Resume final ────────────────────────────────────")
     print(f"  X    : {X.shape}  float32")
     print(f"  y    : {y.shape}   int32")
@@ -180,7 +180,7 @@ def main():
     print(f"  Z0 (Sacramento Valley) : {sum(1 for k in ordered_keys if k[0]==0)} pts")
     print(f"  Z1 (San Joaquin Sud)   : {sum(1 for k in ordered_keys if k[0]==1)} pts")
 
-    # 5. Sauvegarder
+    
     np.savez_compressed(
         OUTPUT_FILE,
         X=X, y=y, mask=mask, lons=lons, lats=lats

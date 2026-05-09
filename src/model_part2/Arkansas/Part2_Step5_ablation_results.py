@@ -113,12 +113,10 @@ def plot_radar(res):
 
     fig, ax = plt.subplots(figsize=(8, 8), subplot_kw=dict(polar=True))
     for c, r in res.items():
-        vals = [(r[m]-vmin)/(vmax-vmin) for m in cats] + \
-               [(r[cats[0]]-vmin)/(vmax-vmin)]
+        vals = [(r[m]-vmin)/(vmax-vmin) for m in cats] +               [(r[cats[0]]-vmin)/(vmax-vmin)]
         ax.plot(angles, vals, 'o-', lw=2, color=r['color'], label=r['label'])
         ax.fill(angles, vals, alpha=0.08, color=r['color'])
-    pv = [(PAPER[m]-vmin)/(vmax-vmin) for m in cats] + \
-         [(PAPER[cats[0]]-vmin)/(vmax-vmin)]
+    pv = [(PAPER[m]-vmin)/(vmax-vmin) for m in cats] +         [(PAPER[cats[0]]-vmin)/(vmax-vmin)]
     ax.plot(angles, pv, 's--', lw=1.5, color='gray', label='Papier', alpha=0.7)
 
     ax.set_xticks(angles[:-1]); ax.set_xticklabels(cats, size=14, fontweight='bold')

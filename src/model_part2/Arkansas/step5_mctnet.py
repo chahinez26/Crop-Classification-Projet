@@ -7,10 +7,10 @@ import numpy as np
 import math
 
 
-# =============================================================================
-# MODULE 1 : ECA — Efficient Channel Attention
-# =============================================================================
-# Calcule l'importance de chaque bande
+
+
+
+
 class ECA(nn.Module):
     def __init__(self, channels, k_size=3):
         super().__init__()
@@ -20,23 +20,23 @@ class ECA(nn.Module):
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
-        # x : [B, T, C]
-        y = self.avg_pool(x.transpose(1, 2))   # [B, C, 1]
-        y = self.conv(y.transpose(1, 2))         # [B, 1, C]
-        y = self.sigmoid(y)                      # [B, 1, C]
-        return x * y                             # [B, T, C]
+        
+        y = self.avg_pool(x.transpose(1, 2))   
+        y = self.conv(y.transpose(1, 2))         
+        y = self.sigmoid(y)                      
+        return x * y                             
 
 
-# =============================================================================
-# MODULE 2 : ALPE — Attention-based Learnable Positional Encoding
-# =============================================================================
+
+
+
 class ALPE(nn.Module):
     def __init__(self, n_timesteps=36, d_model=30, kernel_size=3):
         super().__init__()
         self.n_timesteps = n_timesteps
         self.d_model     = d_model
 
-        # Encodage positionnel sinusoïdal absolu
+        
         pe = torch.zeros(n_timesteps, d_model)
         position = torch.arange(0, n_timesteps, dtype=torch.float).unsqueeze(1)
         div_term = torch.exp(
@@ -48,9 +48,9 @@ class ALPE(nn.Module):
             pe[:, 1::2] = torch.cos(position * div_term[:-1])
         else:
             pe[:, 1::2] = torch.cos(position * div_term)
-        self.register_buffer('pe', pe)   # [T, d_model]
+        self.register_buffer('pe', pe)   
 
-        # Conv1D + ECA learnable
+        
         self.conv = nn.Conv1d(d_model, d_model, kernel_size=kernel_size,
                               padding=kernel_size // 2, bias=False)
         self.eca  = ECA(d_model)
@@ -61,22 +61,22 @@ class ALPE(nn.Module):
         mask : [B, T]  — 1=missing, 0=présent
         """
         B, T, C = x.shape
-        pe = self.pe.unsqueeze(0).expand(B, -1, -1)   # [B, T, d_model]
+        pe = self.pe.unsqueeze(0).expand(B, -1, -1)   
 
-        # Zéroter les positions missing
+        
         mask_2d  = mask.unsqueeze(-1).expand_as(pe)
         pe_masked = pe * (1 - mask_2d)
 
-        # Conv1D + ECA
+        
         pe_conv = self.conv(pe_masked.transpose(1, 2)).transpose(1, 2)
         pe_final = self.eca(pe_conv)
 
         return x + pe_final
 
 
-# =============================================================================
-# MODULE 3 : Transformer sub-module
-# =============================================================================
+
+
+
 class TransformerSubmodule(nn.Module):
     def __init__(self, d_model=30, n_head=5, use_alpe=False,
                  kernel_size=3, n_timesteps=36, dropout=0.1):
@@ -92,7 +92,7 @@ class TransformerSubmodule(nn.Module):
             dropout=dropout,
             batch_first=True
         )
-        #feed-forword : interne du transformer 
+        
         self.ff = nn.Sequential(
             nn.Linear(d_model, d_model * 4),
             nn.ReLU(),
@@ -115,9 +115,9 @@ class TransformerSubmodule(nn.Module):
         return x
 
 
-# =============================================================================
-# MODULE 4 : CNN sub-module
-# =============================================================================
+
+
+
 class CNNSubmodule(nn.Module):
     def __init__(self, d_model=30, kernel_size=3):
         super().__init__()
@@ -137,9 +137,9 @@ class CNNSubmodule(nn.Module):
         return self.relu(out + residual)
 
 
-# =============================================================================
-# MODULE 5 : CTFusion
-# =============================================================================
+
+
+
 class CTFusion(nn.Module):
     def __init__(self, d_model=30, n_head=5, kernel_size=3,
                  use_alpe=False, n_timesteps=36, dropout=0.1):
@@ -157,18 +157,18 @@ class CTFusion(nn.Module):
         return self.fusion(fused)
 
 
-# =============================================================================
-# MODULE 6 : MCTNet — Architecture complète
-# Input [B, 36, 10]
-#    ↓ Linear(10 → 30)          # embedding d'entrée
-#    ↓ CTFusion stage 1 + ALPE  # T=36
-#    ↓ MaxPool(stride=2)         # T=18
-#    ↓ CTFusion stage 2          # T=18
-#    ↓ MaxPool(stride=2)         # T=9
-#    ↓ CTFusion stage 3          # T=9
-#    ↓ GlobalMaxPool(dim=T)      # [B, 30]
-#    ↓ Linear(30 → 5)            # logits [B, 5]
-# =============================================================================
+
+
+
+
+
+
+
+
+
+
+
+
 class MCTNet(nn.Module):
     def __init__(self,
                  n_bands=10,
@@ -185,7 +185,7 @@ class MCTNet(nn.Module):
 
         self.input_embedding = nn.Linear(n_bands, d_model)
 
-        # ── Stages CTFusion ──────────────────────────────────────────
+        
         self.stages = nn.ModuleList()
         t = n_timesteps
         for s in range(n_stage):
@@ -196,10 +196,10 @@ class MCTNet(nn.Module):
             )
             t = t // 2
 
-        # MaxPool entre stages
+        
         self.pool = nn.MaxPool1d(kernel_size=2, stride=2)
 
-        # MLP classifier
+        
         self.classifier = nn.Linear(d_model, n_classes)
 
     def forward(self, x, mask):
@@ -207,8 +207,8 @@ class MCTNet(nn.Module):
         x    : [B, T, n_bands]
         mask : [B, T]
         """
-        # Projection vers l'espace d_model
-        out = self.input_embedding(x)   # [B, T, d_model]
+        
+        out = self.input_embedding(x)   
 
         for s, stage in enumerate(self.stages):
             m = mask if s == 0 else None
@@ -219,15 +219,15 @@ class MCTNet(nn.Module):
                 if s == 0:
                     mask = mask[:, ::2]
 
-        # Global Max Pooling sur T
-        out = out.max(dim=1).values   # [B, d_model]
+        
+        out = out.max(dim=1).values   
 
-        return self.classifier(out)   # [B, n_classes]
+        return self.classifier(out)   
 
 
-# =============================================================================
-# UTILITAIRES
-# =============================================================================
+
+
+
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 

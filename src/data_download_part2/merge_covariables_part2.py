@@ -24,7 +24,7 @@ Sortie : CAL_covariates_v2.npz
 import os, csv
 import numpy as np
 
-# ── CHEMINS ───────────────────────────────────────────────────────────────────
+
 CSV_DIR      = r"data\raw\covariables\california"
 CDL_DIR      = r"data\raw\cdl\california"
 PREPROC_FILE = r"data\processed\CAL_dataset_preprocessed.npz"
@@ -32,7 +32,7 @@ OUTPUT_FILE  = r"data\processed\CAL_covariates_v2.npz"
 ZONES        = [0, 1]
 
 N_TIMESTEPS = 36
-CLIM_COLS   = ['temp_mean', 'vpd_mean', 'solar_mean']   # ← vpd remplace precip
+CLIM_COLS   = ['temp_mean', 'vpd_mean', 'solar_mean']   
 SOIL_COLS   = ['soil_ph', 'soil_oc', 'soil_texture']
 TOPO_COLS   = ['elevation', 'landforms']
 CLASS_NAMES = {
@@ -45,15 +45,15 @@ CLASS_NAMES = {
 }
 N_CLASSES = len(CLASS_NAMES)
 
-# Préfixes fichiers California
+
 CDL_PREFIX  = 'CAL_CDL'
 CLIM_PREFIX = 'CAL_CLIM'
 SOIL_PREFIX = 'CAL_SOIL'
 TOPO_PREFIX = 'CAL_TOPO'
-# ─────────────────────────────────────────────────────────────────────────────
 
 
-# ─── Clés d'alignement ───────────────────────────────────────────────────────
+
+
 def load_cdl_keys():
     print("── Clés CDL (alignement) ───────────────────────────────────")
     ordered_keys = []
@@ -79,7 +79,7 @@ def load_cdl_keys():
     return ordered_keys
 
 
-# ─── Merge climat TEMPOREL ───────────────────────────────────────────────────
+
 def load_climate_timestep(t_idx, zone, key_to_row, X_clim, mask_clim):
     t_str = f"{t_idx + 1:02d}"
     fpath = os.path.join(CSV_DIR, f"{CLIM_PREFIX}_T{t_str}_Z{zone}.csv")
@@ -102,7 +102,7 @@ def load_climate_timestep(t_idx, zone, key_to_row, X_clim, mask_clim):
                     vals.append(0.0)
             bands = np.array(vals, dtype=np.float32)
             X_clim[i, t_idx, :] = bands
-            # temp=0 impossible en Californie → signal missing
+            
             if bands[0] != 0.0:
                 mask_clim[i, t_idx] = 0
                 matched += 1
@@ -111,7 +111,7 @@ def load_climate_timestep(t_idx, zone, key_to_row, X_clim, mask_clim):
     return matched, missing
 
 
-# ─── Merge sol/topo STATIQUE ─────────────────────────────────────────────────
+
 def load_static_csv(filename, feature_cols):
     fpath = os.path.join(CSV_DIR, filename)
     if not os.path.exists(fpath):
@@ -159,7 +159,7 @@ def impute_nans(mat, y):
     return mat
 
 
-# ─── Normalisation ───────────────────────────────────────────────────────────
+
 def normalize_temporal(X, mask, train_idx):
     X_norm = np.zeros_like(X, dtype=np.float32)
     X_tr   = X[train_idx]
@@ -191,7 +191,7 @@ def normalize_static(mat, train_idx, cols):
     return mat_norm
 
 
-# ─── MAIN ────────────────────────────────────────────────────────────────────
+
 def main():
     print("=" * 62)
     print("Part 2 — Étape 1 : Merge covariables California")
@@ -212,8 +212,7 @@ def main():
 
     ordered_keys = load_cdl_keys()
     key_to_row   = {k: i for i, k in enumerate(ordered_keys)}
-    assert len(ordered_keys) == N, \
-        f"❌ {len(ordered_keys)} clés CDL ≠ {N} points dataset"
+    assert len(ordered_keys) == N,        f"❌ {len(ordered_keys)} clés CDL ≠ {N} points dataset"
 
     print("── Merge Climat TEMPOREL (72 CSV) ──────────────────────────")
     X_clim    = np.zeros((N, N_TIMESTEPS, 3), dtype=np.float32)

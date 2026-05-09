@@ -1,18 +1,13 @@
-"""
-STEP 1 - Prepare California data for Part 3
-===========================================
-"""
 
 import os
 import numpy as np
 
 
-ROOT_DIR = r"C:\Users\Stux\OneDrive\Bureau\projet_reseau\MCTNet_v5"
-PART1_DIR = os.path.join(ROOT_DIR, "California", "part_1", "MCTNet_California_v2")
-RAW_FILE = os.path.join(PART1_DIR, "npz", "CAL_dataset.npz")
-PART1_FILE = os.path.join(PART1_DIR, "npz", "CAL_dataset_preprocessed.npz")
-OUTPUT_DIR = os.path.join(ROOT_DIR, "California", "part_3", "npz")
-OUTPUT_FILE = os.path.join(OUTPUT_DIR, "CAL_part3_dataset.npz")
+
+RAW_FILE = r"data\merged_npz\california\CAL_dataset.npz"
+PART1_FILE = r"data\processed\CAL_dataset_preprocessed.npz"
+OUTPUT_DIR = r"data\merged_npz\california"
+OUTPUT_FILE = r"data\merged_npz\california\Part3_CAL_dataset.npz"
 
 BAND_NAMES = ["B02", "B03", "B04", "B05", "B06", "B07", "B08", "B8A", "B11", "B12"]
 INDEX_NAMES = ["NDVI", "EVI", "NDWI", "GNDVI", "NDRE"]

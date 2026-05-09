@@ -13,9 +13,9 @@ import torch.nn.functional as F
 import math
 
 
-# =============================================================================
-# MODULE 1 : ECA
-# =============================================================================
+
+
+
 class ECA(nn.Module):
     def __init__(self, channels, k_size=3):
         super().__init__()
@@ -31,9 +31,9 @@ class ECA(nn.Module):
         return x * y
 
 
-# =============================================================================
-# MODULE 2 : ALPE
-# =============================================================================
+
+
+
 class ALPE(nn.Module):
     def __init__(self, n_timesteps=36, d_model=30, kernel_size=3):
         super().__init__()
@@ -64,9 +64,9 @@ class ALPE(nn.Module):
         return x + pe_final
 
 
-# =============================================================================
-# MODULE 3 : Transformer sub-module
-# =============================================================================
+
+
+
 class TransformerSubmodule(nn.Module):
     def __init__(self, d_model=30, n_head=5, use_alpe=False,
                  kernel_size=3, n_timesteps=36, dropout=0.1):
@@ -95,9 +95,9 @@ class TransformerSubmodule(nn.Module):
         return x
 
 
-# =============================================================================
-# MODULE 4 : CNN sub-module
-# =============================================================================
+
+
+
 class CNNSubmodule(nn.Module):
     def __init__(self, d_model=30, kernel_size=3):
         super().__init__()
@@ -117,9 +117,9 @@ class CNNSubmodule(nn.Module):
         return self.relu(out + residual)
 
 
-# =============================================================================
-# MODULE 5 : CTFusion
-# =============================================================================
+
+
+
 class CTFusion(nn.Module):
     def __init__(self, d_model=30, n_head=5, kernel_size=3,
                  use_alpe=False, n_timesteps=36, dropout=0.1):
@@ -134,15 +134,15 @@ class CTFusion(nn.Module):
         return self.fusion(fused)
 
 
-# =============================================================================
-# MODULE 6 : MCTNet
-# ← Seul changement vs Arkansas : n_classes=6 par défaut
-# =============================================================================
+
+
+
+
 class MCTNet(nn.Module):
     def __init__(self,
                  n_bands=10,
                  n_timesteps=36,
-                 n_classes=6,      # ← 6 classes pour California
+                 n_classes=6,      
                  n_stage=3,
                  n_head=5,
                  kernel_size=3,
@@ -178,9 +178,9 @@ class MCTNet(nn.Module):
         return self.classifier(out.max(dim=1).values)
 
 
-# =============================================================================
-# UTILITAIRES
-# =============================================================================
+
+
+
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
@@ -192,9 +192,9 @@ def build_model(device='cpu'):
     ).to(device)
     n_params = count_parameters(model)
     print(f"MCTNet California — {n_params:,} paramètres entraînables")
-    # California a 6 classes → classifier un peu plus grand qu'Arkansas
-    # Arkansas : Linear(30, 5) = 155 params → California : Linear(30, 6) = 186 params
-    # Différence totale : +31 params → 59 019 params
+    
+    
+    
     print(f"  (papier : 55 140 paramètres pour California)")
     diff = abs(n_params - 55140)
     pct  = diff / 55140 * 100

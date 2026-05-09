@@ -8,9 +8,9 @@ import time
 
 ee.Initialize(project='sentinel-2-491600')
 
-# =============================================================================
-# PARAMÈTRES FIXES
-# =============================================================================
+
+
+
 YEAR         = 2021
 CDL_CONF     = 95
 FOLDER       = 'MCTNet_v5_PART2'
@@ -27,9 +27,9 @@ CDL_COTTON  = 2
 CDL_RICE    = 3
 CDL_SOYBEAN = 5
 
-# =============================================================================
-# FONCTIONS
-# =============================================================================
+
+
+
 def window_dates(t, year):
     m   = t // 3
     w   = t % 3
@@ -97,13 +97,13 @@ def get_climate_composite(geom, start, end):
     return temp.addBands(vpd).addBands(solar).toFloat()
 
 
-# =============================================================================
-# BOUCLE PRINCIPALE — 72 exports
-# =============================================================================
+
+
+
 tasks = []
 
 for t in range(36):
-    z = 1  # Zone 1 seulement
+    z = 1  
     tstr = f"{t+1:02d}"
     zstr = "1"
     name = f"ARK_CLIM_T{tstr}_Z{zstr}"

@@ -17,12 +17,12 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import os
 
-# ── Configuration ──────────────────────────────────────────────
+
 INPUT_FILE  = r"C:\Users\Stux\OneDrive\Bureau\projet_reseau\MCTNet_v5\npz\ARK_dataset_preprocessed.npz"
 FIG_DIR     = r"C:\Users\Stux\OneDrive\Bureau\projet_reseau\MCTNet_v5\figures"
 CLASS_NAMES = {0:'Corn', 1:'Cotton', 2:'Rice', 3:'Soybean', 4:'Others'}
 COLORS      = ['#2ca02c','#d62728','#1f77b4','#ff7f0e','#9467bd']
-# ───────────────────────────────────────────────────────────────
+
 
 os.makedirs(FIG_DIR, exist_ok=True)
 
@@ -94,7 +94,7 @@ def check_class_distribution(splits):
 
 def check_no_leakage(splits):
     print("── 3. Absence de fuite train/test ──────────────────")
-    # Vérifier que les indices ne se chevauchent pas
+    
     data = np.load(INPUT_FILE)
     train_idx = set(data['train_idx'].tolist())
     val_idx   = set(data['val_idx'].tolist())
@@ -132,7 +132,7 @@ def check_mask_consistency(splits):
     print("── 5. Cohérence masque / valeurs zéro ─────────────")
     for split, sp in splits.items():
         X, m = sp['X'], sp['m']
-        # Pixels déclarés missing : toutes bandes doivent être 0
+        
         idx_miss = np.where(m == 1)
         all_zero = np.all(X[idx_miss[0], idx_miss[1], :] == 0)
         status = "✅" if all_zero else "❌"

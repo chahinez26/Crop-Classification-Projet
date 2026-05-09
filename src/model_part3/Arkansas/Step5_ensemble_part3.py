@@ -21,8 +21,8 @@ ROOT_DIR = r"C:\Users\Stux\OneDrive\Bureau\projet_reseau\MCTNet_v5"
 if ROOT_DIR not in sys.path:
     sys.path.insert(0, ROOT_DIR)
 
-from step5_mctnet import MCTNet  # noqa: E402
-from part_3.Step2_model_part3 import Part3ArkansasNet  # noqa: E402
+from step5_mctnet import MCTNet  
+from part_3.Step2_model_part3 import Part3ArkansasNet  
 
 
 PART1_DATA_FILE = os.path.join(ROOT_DIR, "npz", "ARK_dataset_preprocessed.npz")

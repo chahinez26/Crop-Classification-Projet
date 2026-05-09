@@ -9,13 +9,13 @@ import os, time
 
 from step5_mctnet import MCTNet, count_parameters
 
-# ── Configuration ──────────────────────────────────────────────
+
 DATA_FILE    = r"C:\Users\Stux\OneDrive\Bureau\projet_reseau\MCTNet_v5\npz\ARK_dataset_preprocessed.npz"
 MODEL_FILE   = r"C:\Users\Stux\OneDrive\Bureau\projet_reseau\MCTNet_v5\model\best_model.pth"
 HISTORY_FILE = r"C:\Users\Stux\OneDrive\Bureau\projet_reseau\MCTNet_v5\npz\training_history.npz"
 FIG_DIR      = r"C:\Users\Stux\OneDrive\Bureau\projet_reseau\MCTNet_v5\figures"
 
-# Hyperparamètres papier Table 3 — Arkansas
+
 BATCH_SIZE   = 32
 EPOCHS       = 200
 LR           = 0.001
@@ -28,7 +28,7 @@ DROPOUT      = 0.1
 
 PATIENCE     = 40
 RANDOM_SEED  = 42
-# ───────────────────────────────────────────────────────────────
+
 
 os.makedirs(FIG_DIR, exist_ok=True)
 torch.manual_seed(RANDOM_SEED)
@@ -152,7 +152,7 @@ def main():
 
     train_loader, val_loader, test_loader = load_data()
 
-    # Modèle avec d_model=30
+    
     model = MCTNet(n_bands=10, n_timesteps=36, n_classes=N_CLASSES,
                    n_stage=N_STAGE, n_head=N_HEAD,
                    kernel_size=KERNEL_SIZE, d_model=D_MODEL,

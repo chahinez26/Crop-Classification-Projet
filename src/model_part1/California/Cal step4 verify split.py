@@ -11,14 +11,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
-# ── Configuration ──────────────────────────────────────────────
+
 INPUT_FILE  = r"C:\Users\Stux\OneDrive\Bureau\projet_reseau\MCTNet_California_v2\npz\CAL_dataset_preprocessed.npz"
 FIG_DIR     = r"C:\Users\Stux\OneDrive\Bureau\projet_reseau\MCTNet_California_v2\figures"
 N_CLASSES   = 6
 CLASS_NAMES = {0:'Grapes', 1:'Rice', 2:'Alfalfa',
                3:'Almonds', 4:'Pistachios', 5:'Others'}
 COLORS      = ['#9400D3','#2196F3','#FF9800','#8B4513','#4CAF50','#9E9E9E']
-# ───────────────────────────────────────────────────────────────
+
 
 os.makedirs(FIG_DIR, exist_ok=True)
 
@@ -37,7 +37,7 @@ def load_data():
 
 def check_shapes(splits):
     print("── 1. Vérification des shapes ──────────────────────")
-    # 6 classes × 240 train + 6 × 60 val = 1440 train, 360 val
+    
     expected_train = (6 * 240, 36, 10)
     expected_val   = (6 * 60,  36, 10)
 

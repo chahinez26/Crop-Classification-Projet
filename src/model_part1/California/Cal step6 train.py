@@ -18,13 +18,13 @@ import os, time
 
 from CAL_Step5_mctnet import MCTNet, count_parameters
 
-# ── Configuration ──────────────────────────────────────────────
+
 DATA_FILE    = r"C:\Users\Stux\OneDrive\Bureau\projet_reseau\MCTNet_California_v2\npz\CAL_dataset_preprocessed.npz"
 MODEL_FILE   = r"C:\Users\Stux\OneDrive\Bureau\projet_reseau\MCTNet_California_v2\model\best_model_cal.pth"
 HISTORY_FILE = r"C:\Users\Stux\OneDrive\Bureau\projet_reseau\MCTNet_California_v2\npz\training_history_cal.npz"
 FIG_DIR      = r"C:\Users\Stux\OneDrive\Bureau\projet_reseau\MCTNet_California_v2\figures"
 
-# Hyperparamètres papier Table 3 — California (identiques à Arkansas)
+
 BATCH_SIZE   = 32
 EPOCHS       = 200
 LR           = 0.001
@@ -32,11 +32,11 @@ N_STAGE      = 3
 N_HEAD       = 5
 KERNEL_SIZE  = 3
 D_MODEL      = 30
-N_CLASSES    = 6      # ← 6 classes pour California
+N_CLASSES    = 6      
 DROPOUT      = 0.1
 PATIENCE     = 40
 RANDOM_SEED  = 42
-# ───────────────────────────────────────────────────────────────
+
 
 os.makedirs(FIG_DIR, exist_ok=True)
 os.makedirs(os.path.dirname(MODEL_FILE), exist_ok=True)
