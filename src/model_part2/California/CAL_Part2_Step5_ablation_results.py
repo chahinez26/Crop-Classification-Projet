@@ -1,16 +1,3 @@
-"""
-PART 2 — ÉTAPE 5 : Visualisation des résultats d'ablation — California
-=======================================================================
-Entrée  : ablation_results.json + ablation_histories.npz
-Sorties : figures/part2/california/ — 4 figures
-  fig_ablation_metrics.png   — barplot OA/Kappa/F1 par config
-  fig_ablation_delta.png     — gain vs baseline
-  fig_ablation_learning.png  — courbes d'apprentissage
-  fig_ablation_radar.png     — radar OA/Kappa/F1
-
-6 classes : Grapes=0, Rice=1, Alfalfa=2, Almonds=3, Pistachios=4, Others=5
-Métriques papier Table 5 : OA=0.852, Kappa=0.806, F1=0.829
-"""
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -121,12 +108,10 @@ def plot_radar(res):
 
     fig, ax = plt.subplots(figsize=(8, 8), subplot_kw=dict(polar=True))
     for c, r in res.items():
-        vals = [(r[m]-vmin)/(vmax-vmin) for m in cats] + \
-               [(r[cats[0]]-vmin)/(vmax-vmin)]
+        vals = [(r[m]-vmin)/(vmax-vmin) for m in cats] +               [(r[cats[0]]-vmin)/(vmax-vmin)]
         ax.plot(angles, vals, 'o-', lw=2, color=r['color'], label=r['label'])
         ax.fill(angles, vals, alpha=0.08, color=r['color'])
-    pv = [(PAPER[m]-vmin)/(vmax-vmin) for m in cats] + \
-         [(PAPER[cats[0]]-vmin)/(vmax-vmin)]
+    pv = [(PAPER[m]-vmin)/(vmax-vmin) for m in cats] +         [(PAPER[cats[0]]-vmin)/(vmax-vmin)]
     ax.plot(angles, pv, 's--', lw=1.5, color='gray', label='Papier', alpha=0.7)
 
     ax.set_xticks(angles[:-1]); ax.set_xticklabels(cats, size=14, fontweight='bold')

@@ -1,20 +1,8 @@
-"""
-ÉTAPE 3 — Prétraitement et normalisation — California
-======================================================
-Entrée  : CAL_dataset.npz
-Sortie  : CAL_dataset_preprocessed.npz
-
-Différences California vs Arkansas :
-  - 6 classes (Grapes=0, Rice=1, Alfalfa=2, Almonds=3, Pistachios=4, Others=5)
-  - N total ≈ 10 020 points (zones asymétriques)
-  - Même protocole papier : 300 pts/classe → 240 train + 60 val | reste → test
-    SAUF Others : beaucoup plus de points test (~3212)
-"""
 
 import numpy as np
 import os
 
-# ── Configuration ──────────────────────────────────────────────
+
 INPUT_FILE  = r"C:\Users\Stux\OneDrive\Bureau\projet_reseau\MCTNet_California_v2\npz\CAL_dataset.npz"
 OUTPUT_FILE = r"C:\Users\Stux\OneDrive\Bureau\projet_reseau\MCTNet_California_v2\npz\CAL_dataset_preprocessed.npz"
 RANDOM_SEED = 42
@@ -23,10 +11,9 @@ N_CLASSES   = 6
 CLASS_NAMES = {0:'Grapes', 1:'Rice', 2:'Alfalfa',
                3:'Almonds', 4:'Pistachios', 5:'Others'}
 
-# Papier : 300 pts/classe pour train+val (240 train + 60 val)
+
 N_TRAIN_VAL_PER_CLASS = 300
-TRAIN_RATIO           = 0.8   # 240 train, 60 val
-# ───────────────────────────────────────────────────────────────
+TRAIN_RATIO           = 0.8   
 
 
 def load_data():
@@ -109,7 +96,7 @@ def main():
 
     X_norm, band_stats = normalize(X, train_idx, mask)
 
-    # Vérification post-normalisation
+
     present = X_norm[mask == 0]
     missing = X_norm[mask == 1]
     print(f"\n── Vérification ────────────────────────────────────")

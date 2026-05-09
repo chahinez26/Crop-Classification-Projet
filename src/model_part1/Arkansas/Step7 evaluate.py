@@ -1,8 +1,3 @@
-"""
-ÉTAPE 7 — Évaluation complète (v2 corrigée)
-============================================
-Correction : charge d_model depuis le checkpoint sauvegardé par step6
-"""
 
 import numpy as np
 import torch
@@ -13,7 +8,7 @@ import json, os
 
 from step5_mctnet import MCTNet
 
-# ── Configuration ──────────────────────────────────────────────
+
 DATA_FILE    = r"C:\Users\Stux\OneDrive\Bureau\projet_reseau\MCTNet_v5\npz\ARK_dataset_preprocessed.npz"
 MODEL_FILE   = r"C:\Users\Stux\OneDrive\Bureau\projet_reseau\MCTNet_v5\model\best_model.pth"
 RESULTS_FILE = r"C:\Users\Stux\OneDrive\Bureau\projet_reseau\MCTNet_v5\results\results_ARK.json"
@@ -36,7 +31,6 @@ PAPER_RESULTS = {
     'LSTM'      : {'OA': 0.907, 'Kappa': 0.862, 'F1': 0.843},
     'TAE'       : {'OA': 0.911, 'Kappa': 0.869, 'F1': 0.854},
 }
-# ───────────────────────────────────────────────────────────────
 
 
 def confusion_matrix_fn(y_true, y_pred, n_classes=5):
@@ -99,7 +93,7 @@ def per_class_metrics(y_true, y_pred, n_classes=5):
 def load_model_and_data(device):
     checkpoint = torch.load(MODEL_FILE, map_location=device)
 
-    # Récupérer d_model depuis le checkpoint (sauvegardé par step6 v2)
+
     d_model = checkpoint.get('d_model', 30)
     print(f"d_model chargé depuis checkpoint : {d_model}")
 

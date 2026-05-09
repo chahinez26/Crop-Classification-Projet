@@ -1,104 +1,45 @@
-// =============================================================================
-// MCTNet GEE — CALIFORNIA v2 — Zones asymétriques
-// Wang et al. 2024 — Computers and Electronics in Agriculture
-//
-// PROBLÈME v1 RÉSOLU :
-//   Z0 Sacramento Valley : Pistachios = 36/320  (pistachiers absents du nord)
-//   Z1 San Joaquin Sud   : Rice = 10/1020       (riz absent du sud)
-//
-// SOLUTION v2 — Stratégie ASYMÉTRIQUE :
-//   Chaque zone demande seulement les classes qu'elle contient réellement
-//
-//   Z0 NORD (Sacramento Valley élargie) :
-//     - Prend TOUT le Rice (2030 pts) → rizières denses de Sacramento
-//     - Pistachios minimal (20 pts)  → quasi-absent du nord
-//     - CLASS_POINTS Z0 : [1030, 2030, 490, 390, 20, 1760]
-//
-//   Z1 SUD (San Joaquin Sud + Tulare Basin) :
-//     - Prend TOUT le Pistachios (620 pts) → cœur Fresno/Tulare
-//     - Rice minimal (10 pts)              → absent du sud
-//     - CLASS_POINTS Z1 : [1030, 10, 490, 390, 620, 1760]
-//
-// TOTAUX (Z0 + Z1) vs papier Table 2 :
-//   Grapes     : 2060 ≈ 2054 ✅
-//   Rice       : 2040 ≈ 2037 ✅
-//   Alfalfa    :  980 ≈  974 ✅
-//   Almonds    :  780 ≈  783 ✅
-//   Pistachios :  640 =  640 ✅
-//   Others     : 3520 ≈ 3512 ✅
-//   TOTAL      : 10020 ≈ 10000 ✅
-//
-// ZONES v2 (élargies pour maximiser la diversité agricole) :
-//   Z0 : Sacramento Valley + Delta + Lodi + Nord San Joaquin
-//        [-122.5, 37.5, -119.8, 40.5]
-//   Z1 : San Joaquin Central + Tulare Basin + Kern
-//        [-121.0, 34.5, -118.5, 37.5]
-// =============================================================================
 
-// ════════════════════════════════════════════════════════════════════════════
-// ▶ CHANGER CES VARIABLES À CHAQUE RUN
-// ════════════════════════════════════════════════════════════════════════════
-var MODE       = 'CDL_SAMPLE';  // 'CDL_SAMPLE' ou 'SPECTRAL'
-var ZONE_INDEX = 0;              // 0 ou 1
-var T_INDEX    = 0;              // 0 à 35 (seulement pour MODE='SPECTRAL')
-// ════════════════════════════════════════════════════════════════════════════
 
-// =============================================================================
-// PARAMÈTRES FIXES
-// =============================================================================
+var MODE       = 'CDL_SAMPLE';  
+var ZONE_INDEX = 0;              
+var T_INDEX    = 0;              
+
+
 var YEAR       = 2021;
 var CDL_CONF   = 95;
 var FOLDER     = 'MCTNet_California_v2';
 var S2_BANDS   = ['B2','B3','B4','B5','B6','B7','B8','B8A','B11','B12'];
 var BAND_NAMES = ['B02','B03','B04','B05','B06','B07','B08','B8A','B11','B12'];
 
-// Labels : Grapes=0, Rice=1, Alfalfa=2, Almonds=3, Pistachios=4, Others=5
+
 var CLASS_VALUES = [0, 1, 2, 3, 4, 5];
 
-// CLASS_POINTS ASYMÉTRIQUES par zone
-// Z0 : prend tout le Rice, très peu de Pistachios
+
 var CLASS_POINTS_Z0 = [1030, 2030, 490, 390, 20, 1760];
 
-// Z1 : prend tout le Pistachios, très peu de Rice
+
 var CLASS_POINTS_Z1 = [1030, 10, 490, 390, 620, 1760];
 
-// Codes CDL California
+
 var CDL_GRAPES     = 69;
 var CDL_RICE       = 3;
 var CDL_ALFALFA    = 36;
 var CDL_ALMONDS    = 75;
 var CDL_PISTACHIOS = 77;
 
-// =============================================================================
-// ZONES CALIFORNIA v2
-//
-// Z0 : Sacramento Valley ÉLARGIE + Delta + Lodi + Nord San Joaquin
-//   → Inclut les comtés rizicoles (Colusa, Glenn, Sutter, Sacramento, Butte)
-//   → Inclut Lodi et San Joaquin nord pour les Grapes et Almonds
-//   → Inclut le nord de Fresno/Madera pour quelques Pistachios
-//
-// Z1 : San Joaquin Central + Tulare Basin + Kern County
-//   → Cœur des Pistachios (Fresno, Tulare, Kings)
-//   → Grapes (Raisin capital du monde = Fresno)
-//   → Almonds (Madera, Merced, Stanislaus)
-//   → Alfalfa (Kings, Kern)
-//   → Pas de Rice (culture absente de cette région)
-// =============================================================================
+
 var ZONES = [
-  // Zone 0 : Sacramento Valley + Delta + Nord San Joaquin
+
   ee.Geometry.Rectangle([-122.50, 37.50, -119.80, 40.50]),
 
-  // Zone 1 : San Joaquin Central + Tulare Basin
+
   ee.Geometry.Rectangle([-121.00, 34.50, -118.50, 37.50])
 ];
 
-// CLASS_POINTS selon la zone active
+
 var CLASS_POINTS = (ZONE_INDEX === 0) ? CLASS_POINTS_Z0 : CLASS_POINTS_Z1;
 var GEOM         = ZONES[ZONE_INDEX];
 
-// =============================================================================
-// FONCTIONS
-// =============================================================================
 
 function windowDates(t, year) {
   var m    = Math.floor(t / 3);
@@ -167,9 +108,7 @@ function getLabelImage(geom) {
     .clip(geom);
 }
 
-// =============================================================================
-// VARIABLES COMMUNES
-// =============================================================================
+
 var tStr   = (T_INDEX + 1) < 10 ? '0' + (T_INDEX + 1) : '' + (T_INDEX + 1);
 var zStr   = '' + ZONE_INDEX;
 var dates  = windowDates(T_INDEX, YEAR);
@@ -190,9 +129,7 @@ if (MODE === 'SPECTRAL') {
 }
 print('');
 
-// =============================================================================
-// ÉTAPE 1 — CDL_SAMPLE
-// =============================================================================
+
 if (MODE === 'CDL_SAMPLE') {
 
   print('→ stratifiedSample depuis CDL 2021 — California v2');
@@ -258,9 +195,7 @@ if (MODE === 'CDL_SAMPLE') {
     print('  → Passer à MODE="SPECTRAL", T_INDEX=0..35');
   }
 
-// =============================================================================
-// ÉTAPE 2 — SPECTRAL
-// =============================================================================
+
 } else if (MODE === 'SPECTRAL') {
 
   print('→ Composite Sentinel-2 T' + tStr);
@@ -280,7 +215,7 @@ if (MODE === 'CDL_SAMPLE') {
     region      : GEOM,
     scale       : 30,
     classValues : CLASS_VALUES,
-    classPoints : CLASS_POINTS,   // asymétrique selon la zone
+    classPoints : CLASS_POINTS,   
     seed        : 42,
     dropNulls   : false,
     geometries  : true,
@@ -324,29 +259,4 @@ if (MODE === 'CDL_SAMPLE') {
   print('❌ MODE inconnu : "' + MODE + '"');
 }
 
-// =============================================================================
-// LÉGENDE CALIFORNIA v2
-// =============================================================================
-// 🟣 #9400D3 → Grapes     (label 0) : Z0=1030  Z1=1030  Total=2060
-// 🔵 #2196F3 → Rice       (label 1) : Z0=2030  Z1=10    Total=2040
-// 🟠 #FF9800 → Alfalfa    (label 2) : Z0=490   Z1=490   Total=980
-// 🟤 #8B4513 → Almonds    (label 3) : Z0=390   Z1=390   Total=780
-// 🟢 #90EE90 → Pistachios (label 4) : Z0=20    Z1=620   Total=640
-// ⚫ #9E9E9E → Others     (label 5) : Z0=1760  Z1=1760  Total=3520
-// =============================================================================
 
-// =============================================================================
-// RÉCAPITULATIF PROCÉDURE
-// =============================================================================
-// ÉTAPE 1 (2 runs) :
-//   MODE='CDL_SAMPLE', Z=0 → CAL_CDL_Z0  (5720 pts attendus)
-//   MODE='CDL_SAMPLE', Z=1 → CAL_CDL_Z1  (4300 pts attendus)
-//
-// ÉTAPE 2 (72 runs) :
-//   T=0..35, Z=0 → CAL_T01_Z0 ... CAL_T36_Z0
-//   T=0..35, Z=1 → CAL_T01_Z1 ... CAL_T36_Z1
-//
-// DOSSIER DRIVE : MCTNet_California_v2/
-// MERGE PYTHON  : python merge_california.py
-//   → changer INPUT_DIR = './MCTNet_California_v2'
-// =============================================================================

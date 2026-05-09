@@ -1,88 +1,35 @@
-// =============================================================================
-// MCTNet GEE — SCRIPT v5 — FIX stratifiedSample
-// Wang et al. 2024 — Computers and Electronics in Agriculture
-//
-// PROBLÈME v4 RÉSOLU :
-//   .sample(numPixels=10000) sur grande zone → GEE sous-échantillonne
-//   par tuile interne → seulement ~3000-4000 points retournés
-//
-// SOLUTION v5 :
-//   .stratifiedSample(classValues, classPoints) → GEE est FORCÉ
-//   de trouver exactement N points par classe dans toute la zone
-//   → garantit 10 000 points avec la distribution exacte du papier
-//
-// PAPIER (Table 2) — Distribution Arkansas (10 000 points total) :
-//   Soybean : 4677 (46.8%)
-//   Rice    : 2423 (24.2%)
-//   Corn    : 1522 (15.2%)
-//   Cotton  :  762 ( 7.6%)
-//   Others  :  616 ( 6.2%)
-//   TOTAL   : 10000
-//
-//   Par zone (÷2) :
-//   Soybean : 2340  Rice : 1210  Corn : 760  Cotton : 380  Others : 310
-//   TOTAL par zone : 5000 × 2 zones = 10 000 ✅
-//
-// PROCÉDURE :
-//   ÉTAPE 1 (2 runs) : MODE='CDL_SAMPLE'
-//     → Z0 puis Z1 → ARK_CDL_Z0.csv, ARK_CDL_Z1.csv
-//   ÉTAPE 2 (72 runs) : MODE='SPECTRAL', T_INDEX=0..35, ZONE_INDEX=0 et 1
-//     → ARK_T01_Z0.csv ... ARK_T36_Z1.csv
-// =============================================================================
 
-// ════════════════════════════════════════════════════════════════════════════
-// ▶ CHANGER CES VARIABLES À CHAQUE RUN
-// ════════════════════════════════════════════════════════════════════════════
-var MODE       = 'CDL_SAMPLE';  // 'CDL_SAMPLE' ou 'SPECTRAL'
-var ZONE_INDEX = 0;              // 0 ou 1
-var T_INDEX    = 0;              // 0 à 35 (seulement pour MODE='SPECTRAL')
-// ════════════════════════════════════════════════════════════════════════════
-
-// =============================================================================
-// PARAMÈTRES FIXES
-// =============================================================================
+var MODE       = 'CDL_SAMPLE';  
+var ZONE_INDEX = 0;              
+var T_INDEX    = 0;              
 var YEAR       = 2021;
-var CDL_CONF   = 95;        // papier : "95% confidence"
+var CDL_CONF   = 95;        
 var FOLDER     = 'MCTNet_v5';
 var S2_BANDS   = ['B2','B3','B4','B5','B6','B7','B8','B8A','B11','B12'];
 var BAND_NAMES = ['B02','B03','B04','B05','B06','B07','B08','B8A','B11','B12'];
 
-// Distribution EXACTE du papier Table 2, divisée en 2 zones égales
-// Corn=0, Cotton=1, Rice=2, Soybean=3, Others=4
-var CLASS_VALUES  = [0, 1, 2, 3, 4];
-var CLASS_POINTS  = [760, 380, 1210, 2340, 310];  // total = 5000 par zone
-// Note : si une classe n'a pas assez de pixels dans la zone,
-//        GEE retourne le maximum disponible (pas d'erreur)
 
-// Codes CDL Arkansas
+var CLASS_VALUES  = [0, 1, 2, 3, 4];
+var CLASS_POINTS  = [760, 380, 1210, 2340, 310];  
+
+
 var CDL_CORN    = 1;
 var CDL_COTTON  = 2;
 var CDL_RICE    = 3;
 var CDL_SOYBEAN = 5;
 
-// =============================================================================
-// ZONES ARKANSAS — Cœur du Delta (plaine alluviale = 80-90% cropland)
-// Zone 0 : NORD Delta — Mississippi, Crittenden, St Francis, Cross,
-//          Woodruff, Lee, Phillips, Monroe, Prairie counties
-// Zone 1 : SUD Delta — Arkansas, Desha, Chicot, Drew, Ashley,
-//          Lincoln, Jefferson, Cleveland, Bradley counties
-// =============================================================================
+
 var ZONES = [
-  // Zone 0 : Nord Arkansas Delta
+
   ee.Geometry.Rectangle([-91.50, 34.75, -90.05, 35.85]),
 
-  // Zone 1 : Sud Arkansas Delta
+
   ee.Geometry.Rectangle([-91.80, 33.15, -90.25, 34.75])
 ];
 
 var GEOM = ZONES[ZONE_INDEX];
 
-// =============================================================================
-// FONCTIONS
-// =============================================================================
 
-// Dates de début/fin pour chaque timestep (0–35)
-// 36 timesteps = 12 mois × 3 fenêtres de ~10 jours
 function windowDates(t, year) {
   var m    = Math.floor(t / 3);
   var w    = t % 3;
@@ -96,8 +43,7 @@ function windowDates(t, year) {
   return [year + '-' + mStr + '-21', nxt];
 }
 
-// Composite Sentinel-2 médian sur une fenêtre de 10 jours
-// Pixels manquants (nuages) → 0 via unmask(0)
+
 function getComposite(geom, start, end) {
   var col = ee.ImageCollection('COPERNICUS/S2_SR_HARMONIZED')
     .filterBounds(geom)
@@ -116,8 +62,7 @@ function getComposite(geom, start, end) {
   ));
 }
 
-// Image de labels CDL encodés (0=Corn, 1=Cotton, 2=Rice, 3=Soybean, 4=Others)
-// Masquée par confiance 95% + WorldCover cropland
+
 function getLabelImage(geom) {
   var cdl = ee.ImageCollection('USDA/NASS/CDL')
     .filter(ee.Filter.date('2021-01-01', '2022-01-01'))
@@ -155,9 +100,7 @@ function getLabelImage(geom) {
     .clip(geom);
 }
 
-// =============================================================================
-// VARIABLES COMMUNES
-// =============================================================================
+
 var tStr   = (T_INDEX + 1) < 10 ? '0' + (T_INDEX + 1) : '' + (T_INDEX + 1);
 var zStr   = '' + ZONE_INDEX;
 var dates  = windowDates(T_INDEX, YEAR);
@@ -171,10 +114,7 @@ if (MODE === 'SPECTRAL') {
 }
 print('');
 
-// =============================================================================
-// ÉTAPE 1 — CDL_SAMPLE
-// stratifiedSample() par classe → exactement N points par classe
-// =============================================================================
+
 if (MODE === 'CDL_SAMPLE') {
 
   print('→ stratifiedSample depuis CDL 2021');
@@ -182,15 +122,9 @@ if (MODE === 'CDL_SAMPLE') {
   print('  Total cible : 5000 points par zone');
   print('');
 
-  // stratifiedSample sur l'image de labels
-  // classBand   : 'crop_label' (valeurs 0-4)
-  // classValues : [0, 1, 2, 3, 4]
-  // classPoints : [760, 380, 1210, 2340, 310]
-  // scale: 30   : résolution CDL
-  // seed: 42    : reproductibilité
-  // geometries: true : garder coordonnées lon/lat
+
   var points = labels.stratifiedSample({
-    numPoints   : 0,                // ignoré quand classPoints est fourni
+    numPoints   : 0,                
     classBand   : 'crop_label',
     region      : GEOM,
     scale       : 30,
@@ -202,13 +136,12 @@ if (MODE === 'CDL_SAMPLE') {
     tileScale   : 16
   });
 
-  // Ajouter le cdl_raw pour référence (utile pour vérification)
+
   var cdlRaw = ee.ImageCollection('USDA/NASS/CDL')
     .filter(ee.Filter.date('2021-01-01', '2022-01-01'))
     .first().select('cropland').rename('cdl_raw').clip(GEOM);
 
-  // Joindre cdl_raw aux points via sampleRegions n'est pas direct en GEE
-  // → on l'ajoute comme band dans stratifiedSample
+
   var labelsWithRaw = labels.addBands(cdlRaw);
 
   var pointsFinal = labelsWithRaw.stratifiedSample({
@@ -243,7 +176,7 @@ if (MODE === 'CDL_SAMPLE') {
     fileFormat     : 'CSV'
   });
 
-  // Visualisation
+
   Map.centerObject(GEOM, 10);
   Map.addLayer(labels,
     {min:0, max:4, palette:['4CAF50','F44336','2196F3','FF9800','9E9E9E']},
@@ -260,11 +193,7 @@ if (MODE === 'CDL_SAMPLE') {
   print('  3. Vérifier ~5000 pts/zone avec bonne distribution');
   print('  4. Passer à MODE="SPECTRAL", T_INDEX=0..35');
 
-// =============================================================================
-// ÉTAPE 2 — SPECTRAL
-// Extraire bandes Sentinel-2 aux coordonnées CDL fixes pour chaque timestep
-// MÊME seed + MÊME scale + MÊME GEOM = mêmes pixels géographiques
-// =============================================================================
+
 } else if (MODE === 'SPECTRAL') {
 
   print('→ Composite Sentinel-2 T' + tStr);
@@ -277,8 +206,7 @@ if (MODE === 'CDL_SAMPLE') {
 
   var comp = getComposite(GEOM, dates[0], dates[1]);
 
-  // Même stratifiedSample avec MÊME seed → mêmes coordonnées géographiques
-  // addBands(labels) pour garder crop_label dans l'export
+
   var imgForSample = comp.addBands(labels);
 
   var samples = imgForSample.stratifiedSample({
@@ -288,8 +216,8 @@ if (MODE === 'CDL_SAMPLE') {
     scale       : 30,
     classValues : CLASS_VALUES,
     classPoints : CLASS_POINTS,
-    seed        : 42,          // MÊME seed = MÊMES pixels géographiques
-    dropNulls   : false,       // false = garder les pixels même si B02=0 (missing)
+    seed        : 42,          
+    dropNulls   : false,       
     geometries  : true,
     tileScale   : 16
   });
@@ -308,7 +236,7 @@ if (MODE === 'CDL_SAMPLE') {
     fileFormat     : 'CSV'
   });
 
-  // Visualisation RGB
+
   Map.centerObject(GEOM, 10);
   Map.addLayer(comp.select(['B04','B03','B02']),
     {min:0, max:3000, gamma:1.4}, 'RGB T' + tStr + ' Z' + zStr);
@@ -334,33 +262,4 @@ if (MODE === 'CDL_SAMPLE') {
   print('   Utiliser "CDL_SAMPLE" ou "SPECTRAL"');
 }
 
-// =============================================================================
-// LÉGENDE
-// =============================================================================
-// 🟢 #4CAF50 → Corn    (label 0) — cible 760/zone
-// 🔴 #F44336 → Cotton  (label 1) — cible 380/zone
-// 🔵 #2196F3 → Rice    (label 2) — cible 1210/zone
-// 🟠 #FF9800 → Soybean (label 3) — cible 2340/zone
-// ⚫ #9E9E9E → Others  (label 4) — cible 310/zone
-// =============================================================================
 
-// =============================================================================
-// RÉCAPITULATIF COMPLET
-// =============================================================================
-// ÉTAPE 1 (2 runs) :
-//   MODE='CDL_SAMPLE', Z=0 → ARK_CDL_Z0  (~5000 pts)
-//   MODE='CDL_SAMPLE', Z=1 → ARK_CDL_Z1  (~5000 pts)
-//
-// ÉTAPE 2 (72 runs) :
-//   T=0,  Z=0 → ARK_T01_Z0    T=0,  Z=1 → ARK_T01_Z1
-//   T=1,  Z=0 → ARK_T02_Z0    T=1,  Z=1 → ARK_T02_Z1
-//   ...
-//   T=35, Z=0 → ARK_T36_Z0    T=35, Z=1 → ARK_T36_Z1
-//
-// FICHIERS DRIVE (MCTNet_v5/) :
-//   ARK_CDL_Z0.csv, ARK_CDL_Z1.csv          ← points fixes + labels
-//   ARK_T01_Z0.csv ... ARK_T36_Z1.csv        ← bandes spectrales
-//
-// MERGE PYTHON :
-//   Joindre par (longitude, latitude) → X[10000, 36, 10], y[10000]
-// =============================================================================

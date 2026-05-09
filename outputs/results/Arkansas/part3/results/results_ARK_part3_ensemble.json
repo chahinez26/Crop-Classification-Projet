@@ -1,0 +1,96 @@
+{
+  "dataset": "Arkansas",
+  "model": "Ensemble(Part1_MCTNet, Part3ArkansasNet)",
+  "weight_part3": 0.7,
+  "n_test": 8500,
+  "OA": 0.95,
+  "Kappa": 0.924792,
+  "F1_macro": 0.902953,
+  "per_class_metrics": [
+    {
+      "class": "Corn",
+      "n_test": 1220,
+      "precision": 0.9645,
+      "recall": 0.9803,
+      "f1": 0.9724
+    },
+    {
+      "class": "Cotton",
+      "n_test": 460,
+      "precision": 0.9076,
+      "recall": 0.9826,
+      "f1": 0.9436
+    },
+    {
+      "class": "Rice",
+      "n_test": 2120,
+      "precision": 0.9957,
+      "recall": 0.9858,
+      "f1": 0.9908
+    },
+    {
+      "class": "Soybean",
+      "n_test": 4380,
+      "precision": 0.9921,
+      "recall": 0.9224,
+      "f1": 0.956
+    },
+    {
+      "class": "Others",
+      "n_test": 320,
+      "precision": 0.5025,
+      "recall": 0.9281,
+      "f1": 0.652
+    }
+  ],
+  "class_f1_raw": [
+    0.972358,
+    0.943633,
+    0.990756,
+    0.955987,
+    0.652031
+  ],
+  "confusion_matrix": [
+    [
+      1196,
+      0,
+      0,
+      5,
+      19
+    ],
+    [
+      0,
+      452,
+      0,
+      2,
+      6
+    ],
+    [
+      3,
+      0,
+      2090,
+      8,
+      19
+    ],
+    [
+      40,
+      42,
+      8,
+      4040,
+      250
+    ],
+    [
+      1,
+      4,
+      1,
+      17,
+      297
+    ]
+  ],
+  "validation_best": {
+    "OA": 0.966667,
+    "Kappa": 0.958333,
+    "F1_macro": 0.966632,
+    "selection_score": 0.96665
+  }
+}

@@ -1,12 +1,3 @@
-"""
-ÉTAPE 7 — Évaluation complète — California
-==========================================
-Entrée  : best_model_cal.pth + CAL_dataset_preprocessed.npz
-Sortie  : results_CAL.json + figures
-
-6 classes : Grapes=0, Rice=1, Alfalfa=2, Almonds=3, Pistachios=4, Others=5
-Métriques cibles (papier Table 5) : OA=0.852, Kappa=0.806, F1=0.829
-"""
 
 import numpy as np
 import torch
@@ -17,7 +8,7 @@ import json, os
 
 from CAL_Step5_mctnet import MCTNet
 
-# ── Configuration ──────────────────────────────────────────────
+
 DATA_FILE    = r"C:\Users\Stux\OneDrive\Bureau\projet_reseau\MCTNet_California_v2\npz\CAL_dataset_preprocessed.npz"
 MODEL_FILE   = r"C:\Users\Stux\OneDrive\Bureau\projet_reseau\MCTNet_California_v2\model\best_model_cal.pth"
 RESULTS_FILE = r"C:\Users\Stux\OneDrive\Bureau\projet_reseau\MCTNet_California_v2\results\results_CAL.json"
@@ -30,7 +21,7 @@ N_CLASSES   = 6
 CLASS_NAMES = ['Grapes', 'Rice', 'Alfalfa', 'Almonds', 'Pistachios', 'Others']
 COLORS      = ['#9400D3','#2196F3','#FF9800','#8B4513','#4CAF50','#9E9E9E']
 
-# Résultats papier Table 5 — California
+
 PAPER_RESULTS = {
     'MCTNet'     : {'OA': 0.852, 'Kappa': 0.806, 'F1': 0.829},
     'GL-TAE'     : {'OA': 0.843, 'Kappa': 0.796, 'F1': 0.820},
@@ -42,7 +33,6 @@ PAPER_RESULTS = {
     'LSTM'       : {'OA': 0.799, 'Kappa': 0.739, 'F1': 0.766},
     'TAE'        : {'OA': 0.787, 'Kappa': 0.728, 'F1': 0.767},
 }
-# ───────────────────────────────────────────────────────────────
 
 
 def confusion_matrix_fn(y_true, y_pred):

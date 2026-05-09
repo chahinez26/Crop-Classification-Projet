@@ -1,24 +1,8 @@
-// Variables topographiques choisies (2) :
-//   1. elevation  → USGS SRTM 30m (mètres)
-//      Justification : le Delta Arkansas est très plat (30-100m).
-//      Même 1-5m de variation distingue zones drainées (maïs/soja)
-//      vs zones basses inondables (riz). Variable topographique principale.
-//
-//   2. landforms  → CSP/ERGo ALOS_landforms (classes Weiss 1-16)
-//      Justification : complète l'élévation en capturant la position
-//      dans le paysage. Riz = vallées/bas-fonds (classes 41-42),
-//      coton = terrasses surélevées (classes 21-24).
-// =============================================================================
 
-// ════════════════════════════════════════════════════════════════════════════
-// ▶ CHANGER CETTE VARIABLE À CHAQUE RUN
-// ════════════════════════════════════════════════════════════════════════════
-var ZONE_INDEX = 0;   // 0 ou 1
-// ════════════════════════════════════════════════════════════════════════════
 
-// =============================================================================
-// PARAMÈTRES FIXES — identiques à gee_arkansas_v5.js
-// =============================================================================
+var ZONE_INDEX = 0;   
+
+
 var CDL_CONF     = 95;
 var FOLDER       = 'MCTNet_v5';
 var CLASS_VALUES = [0, 1, 2, 3, 4];
@@ -37,9 +21,7 @@ var ZONES = [
 var GEOM = ZONES[ZONE_INDEX];
 var zStr = '' + ZONE_INDEX;
 
-// =============================================================================
-// IMAGE DE LABELS CDL — identique à gee_arkansas_v5.js
-// =============================================================================
+
 function getLabelImage(geom) {
   var cdl = ee.ImageCollection('USDA/NASS/CDL')
     .filter(ee.Filter.date('2021-01-01', '2022-01-01'))
@@ -68,50 +50,37 @@ function getLabelImage(geom) {
     .clip(geom);
 }
 
-// =============================================================================
-// DONNÉES TOPOGRAPHIQUES
-// =============================================================================
 
-// 1. ELEVATION — USGS SRTM (30m, terres émergées uniquement)
-//    CORRECTION : remplace ETOPO1 (1.8km, bandes marines) par SRTM (30m, terrestre)
-//    unmask(0) : sécurité si pixel isolé sans valeur → sera 0m (impossible dans ARK Delta)
 var elevation = ee.Image('USGS/SRTMGL1_003')
   .select('elevation')
-  .unmask(0)             // ← sécurité : aucun null ne causera dropNulls
+  .unmask(0)             
   .clip(GEOM);
 
-// 2. LANDFORMS — CSP/ERGo ALOS (inchangé, dataset correct)
-//    unmask(0) : sécurité pour dropNulls
+
 var landforms = ee.Image('CSP/ERGo/1_0/Global/ALOS_landforms')
   .select('constant')
   .rename('landforms')
-  .unmask(0)             // ← sécurité
+  .unmask(0)             
   .clip(GEOM);
 
-// =============================================================================
-// ASSEMBLAGE — labels EN PREMIER (classBand), puis covariables
-// =============================================================================
+
 var labels = getLabelImage(GEOM);
 
-// ORDRE IMPORTANT :
-//   labels en premier → classBand='crop_label' toujours trouvée
-//   covariables ensuite → extraites aux mêmes pixels
+
 var imgForSample = labels
   .addBands(elevation)
   .addBands(landforms)
   .toFloat()
-  .addBands(labels, null, true);   // remettre crop_label en int pour stratifiedSample
+  .addBands(labels, null, true);   
 
-// =============================================================================
-// STRATIFIED SAMPLE — MÊMES paramètres que Part 1
-// =============================================================================
+
 print('=== MCTNet GEE — Topography Covariates v2 (SRTM) ===');
 print('Zone      : Z' + zStr);
 print('elevation : USGS/SRTMGL1_003 (30m) ← CORRECTION vs ETOPO1 (1.8km)');
 print('landforms : CSP/ERGo/1_0/Global/ALOS_landforms');
 print('');
 
-// Vérification : SRTM a bien des valeurs dans la zone
+
 var elevStats = elevation.reduceRegion({
   reducer  : ee.Reducer.mean().combine(ee.Reducer.minMax(), '', true),
   geometry : GEOM,
@@ -120,7 +89,7 @@ var elevStats = elevation.reduceRegion({
 });
 print('Statistiques elevation SRTM Z' + zStr + ' :');
 print(elevStats);
-// Attendu : mean ~50-80m, min ~30m, max ~120m pour le Delta Arkansas
+
 
 print('');
 
@@ -128,19 +97,17 @@ var samples = imgForSample.stratifiedSample({
   numPoints   : 0,
   classBand   : 'crop_label',
   region      : GEOM,
-  scale       : 30,            // identique Part 1
+  scale       : 30,            
   classValues : CLASS_VALUES,
   classPoints : CLASS_POINTS,
-  seed        : 42,            // MÊME seed → MÊMES pixels
-  dropNulls   : true,          // safe car unmask(0) appliqué
+  seed        : 42,            
+  dropNulls   : true,          
   geometries  : true,
   tileScale   : 16
 });
 
-// =============================================================================
-// VÉRIFICATIONS
-// =============================================================================
-print('Points extraits :', samples.size());   // doit être 5000
+
+print('Points extraits :', samples.size());   
 print('');
 
 var names   = {0:'Corn   ', 1:'Cotton ', 2:'Rice   ', 3:'Soybean', 4:'Others '};
@@ -154,9 +121,7 @@ print('');
 print('Exemple valeurs (5 premiers points) :');
 print(samples.limit(5));
 
-// =============================================================================
-// EXPORT
-// =============================================================================
+
 Export.table.toDrive({
   collection     : samples,
   description    : 'ARK_TOPO_Z' + zStr,
@@ -165,9 +130,7 @@ Export.table.toDrive({
   fileFormat     : 'CSV'
 });
 
-// =============================================================================
-// VISUALISATION
-// =============================================================================
+
 Map.centerObject(GEOM, 9);
 
 Map.addLayer(elevation,
@@ -196,12 +159,4 @@ if (ZONE_INDEX === 0) {
   print('🏁 Les deux zones extraites !');
 }
 
-// =============================================================================
-// COLONNES DU CSV
-// =============================================================================
-// system:index  ← identique à ARK_CDL_Z*.csv de Part 1 ✅
-// crop_label    ← 0-4 (vérification)
-// elevation     ← altitude SRTM en mètres (30m résolution)
-// landforms     ← classe Weiss ALOS (11-42 ou 1-16 selon version)
-// .geo          ← lon/lat identiques à ARK_CDL_Z*.csv ✅
-// =============================================================================
+

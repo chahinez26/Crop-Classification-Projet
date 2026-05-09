@@ -1,16 +1,6 @@
-"""
-PART 2 — ÉTAPE 3 : Architecture MCTNetCov — California
-=======================================================
-MCTNet (Part 1) + Late Fusion des covariables environnementales.
+import os
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
-Late Fusion :
-  S2 branch  : MCTNet backbone → GlobalMaxPool → [B, 30]
-  Cov branch : MLP(n_cov → 16) → [B, 16]
-  Fusion     : Concat → Linear(46, 64) → ReLU → Linear(64, 6)
-
-6 classes California :
-  Grapes=0, Rice=1, Alfalfa=2, Almonds=3, Pistachios=4, Others=5
-"""
 import torch
 import torch.nn as nn
 import sys, os
@@ -36,17 +26,13 @@ class CovariateEncoder(nn.Module):
 
 
 class MCTNetCov(nn.Module):
-    """
-    MCTNet + Late Fusion des covariables — California (n_classes=6).
-    n_cov : 2 (topo), 3 (clim ou sol), 8 (all)
-    """
     def __init__(self, n_bands=10, n_timesteps=36, n_classes=6,
                  n_stage=3, n_head=5, kernel_size=3, d_model=30,
                  dropout=0.1, n_cov=8, d_cov=16):
         super().__init__()
         self.n_cov = n_cov
 
-        # Backbone MCTNet
+
         self.input_embedding = nn.Linear(n_bands, d_model)
         self.stages = nn.ModuleList()
         t = n_timesteps
@@ -58,10 +44,10 @@ class MCTNetCov(nn.Module):
             t = t // 2
         self.pool = nn.MaxPool1d(kernel_size=2, stride=2)
 
-        # Encodeur covariables
+
         self.cov_encoder = CovariateEncoder(n_cov, d_cov, dropout)
 
-        # Classificateur fusion
+
         self.classifier = nn.Sequential(
             nn.Linear(d_model + d_cov, 64),
             nn.ReLU(),
@@ -83,7 +69,6 @@ class MCTNetCov(nn.Module):
 
 
 def build_model(n_cov, d_cov=16, device='cpu'):
-    """Construit MCTNet (n_cov=0) ou MCTNetCov (n_cov>0) — California."""
     if n_cov == 0:
         return MCTNet(n_bands=10, n_timesteps=36, n_classes=6,
                       n_stage=3, n_head=5, kernel_size=3,
@@ -106,8 +91,7 @@ if __name__ == "__main__":
         m.eval()
         x, mask = torch.randn(B,36,10).to(device), torch.zeros(B,36).to(device)
         with torch.no_grad():
-            out = m(x, mask, torch.rand(B,n_cov).to(device)) if n_cov > 0 \
-                  else m(x, mask)
+            out = m(x, mask, torch.rand(B,n_cov).to(device)) if n_cov > 0                  else m(x, mask)
         print(f"✅ {name:12s} n_cov={n_cov} params={count_parameters(m):,} "
               f"out={list(out.shape)}  (attendu: [{B}, 6])")
     print("\n→ Lancer : python CAL_Part2_Step4_ablation_train.py")

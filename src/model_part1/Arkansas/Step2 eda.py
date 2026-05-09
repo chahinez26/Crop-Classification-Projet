@@ -1,15 +1,3 @@
-"""
-ÉTAPE 2 — Exploration des données (EDA)
-========================================
-Entrée  : ARK_dataset.npz
-Sorties : figures/  (PNG)
-  - fig_ndvi_timeseries.png   ← reproduit Fig. 2(a) du papier
-  - fig_class_distribution.png
-  - fig_missing_heatmap.png
-  - fig_band_correlation.png
-
-Installer : pip install matplotlib seaborn
-"""
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -17,14 +5,14 @@ import matplotlib.patches as mpatches
 import seaborn as sns
 import os
 
-# ── Configuration ──────────────────────────────────────────────
+
 DATASET_FILE = r"C:\Users\Stux\OneDrive\Bureau\projet_reseau\MCTNet_v5\ARK_dataset.npz"
 FIG_DIR      = r"C:\Users\Stux\OneDrive\Bureau\projet_reseau\MCTNet_v5\figures"
 BAND_NAMES   = ['B02','B03','B04','B05','B06','B07','B08','B8A','B11','B12']
 CLASS_NAMES  = {0:'Corn', 1:'Cotton', 2:'Rice', 3:'Soybean', 4:'Others'}
 CLASS_COLORS = {0:'#2ca02c', 1:'#d62728', 2:'#1f77b4',
                 3:'#ff7f0e', 4:'#9467bd'}
-# Dates de début de chaque fenêtre de 10 jours (pour l'axe X)
+
 TIMESTEP_LABELS = [
     'Jan-1','Jan-11','Jan-21','Feb-1','Feb-11','Feb-21',
     'Mar-1','Mar-11','Mar-21','Apr-1','Apr-11','Apr-21',
@@ -33,7 +21,7 @@ TIMESTEP_LABELS = [
     'Sep-1','Sep-11','Sep-21','Oct-1','Oct-11','Oct-21',
     'Nov-1','Nov-11','Nov-21','Dec-1','Dec-11','Dec-21',
 ]
-# ───────────────────────────────────────────────────────────────
+
 
 os.makedirs(FIG_DIR, exist_ok=True)
 
@@ -47,15 +35,13 @@ def load_data():
 
 
 def compute_ndvi(X, mask):
-    """NDVI = (B08 - B04) / (B08 + B04). Pixels missing → NaN."""
-    b8  = X[:, :, 6].copy()   # B08 = NIR (index 6)
-    b4  = X[:, :, 2].copy()   # B04 = Red (index 2)
+    b8  = X[:, :, 6].copy()   
+    b4  = X[:, :, 2].copy()   
     denom = b8 + b4
     ndvi = np.where((denom > 0) & (mask == 0), (b8 - b4) / denom, np.nan)
     return ndvi
 
 
-# ── Figure 1 : Courbes NDVI par classe (reproduit Fig. 2a du papier) ─────────
 def plot_ndvi_timeseries(X, y, mask):
     ndvi = compute_ndvi(X, mask)
     t_axis = np.arange(36)
@@ -65,7 +51,7 @@ def plot_ndvi_timeseries(X, y, mask):
 
     for lbl, name in CLASS_NAMES.items():
         idx   = np.where(y == lbl)[0]
-        ndvi_class = ndvi[idx, :]                    # [N_class, 36]
+        ndvi_class = ndvi[idx, :]                    
         mean  = np.nanmean(ndvi_class, axis=0)
         std   = np.nanstd(ndvi_class, axis=0)
         color = CLASS_COLORS[lbl]
@@ -74,7 +60,7 @@ def plot_ndvi_timeseries(X, y, mask):
         ax.fill_between(t_axis, mean - std, mean + std,
                         color=color, alpha=0.12, zorder=2)
 
-    # Repères saisonniers
+
     for x, season in [(0,'Winter'), (9,'Spring'), (18,'Summer'), (27,'Autumn')]:
         ax.axvline(x, color='gray', linewidth=0.6, linestyle='--', alpha=0.5)
         ax.text(x + 0.3, 0.82, season, fontsize=8, color='gray', va='top')
@@ -95,7 +81,6 @@ def plot_ndvi_timeseries(X, y, mask):
     print(f"✅ Sauvé : {out}")
 
 
-# ── Figure 2 : Distribution des classes ──────────────────────────────────────
 def plot_class_distribution(y):
     paper = {0:1522, 1:762, 2:2423, 3:4677, 4:616}
     names = [CLASS_NAMES[i] for i in range(5)]
@@ -130,11 +115,10 @@ def plot_class_distribution(y):
     print(f"✅ Sauvé : {out}")
 
 
-# ── Figure 3 : Heatmap des valeurs manquantes ────────────────────────────────
 def plot_missing_heatmap(mask, y):
     fig, axes = plt.subplots(1, 2, figsize=(14, 5))
 
-    # Gauche : taux de missing par timestep (courbe)
+
     miss_pct = mask.mean(axis=0) * 100
     ax = axes[0]
     ax.bar(np.arange(36), miss_pct,
@@ -149,7 +133,7 @@ def plot_missing_heatmap(mask, y):
     ax.legend(fontsize=9)
     ax.grid(axis='y', alpha=0.3)
 
-    # Droite : heatmap missing par classe × timestep
+
     ax2 = axes[1]
     miss_by_class = np.zeros((5, 36))
     for lbl in range(5):
@@ -174,9 +158,8 @@ def plot_missing_heatmap(mask, y):
     print(f"✅ Sauvé : {out}")
 
 
-# ── Figure 4 : Moyennes spectrales par classe à T18 (été) ────────────────────
 def plot_spectral_signatures(X, y, mask):
-    T_ETE = 17   # T18 = juillet = pleine saison
+    T_ETE = 17   
     fig, ax = plt.subplots(figsize=(10, 5))
 
     x_bands = np.arange(10)
@@ -184,7 +167,7 @@ def plot_spectral_signatures(X, y, mask):
         idx = np.where((y == lbl) & (mask[:, T_ETE] == 0))[0]
         if len(idx) == 0:
             continue
-        mean_bands = X[idx, T_ETE, :].mean(axis=0) / 10000  # réflectance 0-1
+        mean_bands = X[idx, T_ETE, :].mean(axis=0) / 10000  
         ax.plot(x_bands, mean_bands, 'o-', color=CLASS_COLORS[lbl],
                 linewidth=2, markersize=5, label=f'{name} (n={len(idx)})')
 
@@ -209,7 +192,7 @@ def print_summary_stats(X, y, mask):
     print(f"  Missing global   : {100*mask.mean():.2f}%")
     print(f"  Présents global  : {100*(1-mask.mean()):.2f}%")
 
-    # Timestep avec le plus/moins de missing
+
     miss_per_t = mask.mean(axis=0) * 100
     t_worst  = int(miss_per_t.argmax())
     t_best   = int(miss_per_t.argmin())
@@ -218,7 +201,7 @@ def print_summary_stats(X, y, mask):
     print(f"  Timestep le + clair   : T{t_best+1:02d} ({TIMESTEP_LABELS[t_best]})  "
           f"→ {miss_per_t[t_best]:.1f}% missing")
 
-    # Stats par bande à T18
+
     print(f"\n  Statistiques bandes à T18 (juillet) :")
     idx_present = np.where(mask[:, 17] == 0)[0]
     print(f"  {'Bande':5s}  {'Moyenne':>8s}  {'Std':>8s}  {'Min':>8s}  {'Max':>8s}")

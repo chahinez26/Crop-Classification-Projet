@@ -1,23 +1,10 @@
-"""
-ÉTAPE 2 — Exploration des données (EDA) — California
-======================================================
-Entrée  : CAL_dataset.npz
-Sorties : figures_california/  (PNG)
-  - fig_ndvi_timeseries.png
-  - fig_class_distribution.png
-  - fig_missing_heatmap.png
-  - fig_spectral_signatures.png
-
-6 classes California :
-  0=Grapes, 1=Rice, 2=Alfalfa, 3=Almonds, 4=Pistachios, 5=Others
-"""
 
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os
 
-# ── Configuration ──────────────────────────────────────────────
+
 DATASET_FILE = r"C:\Users\Stux\OneDrive\Bureau\projet_reseau\MCTNet_California_v2\npz\CAL_dataset.npz"
 FIG_DIR      = r"C:\Users\Stux\OneDrive\Bureau\projet_reseau\MCTNet_California_v2\figures"
 BAND_NAMES   = ['B02','B03','B04','B05','B06','B07','B08','B8A','B11','B12']
@@ -35,7 +22,7 @@ TIMESTEP_LABELS = [
     'Sep-1','Sep-11','Sep-21','Oct-1','Oct-11','Oct-21',
     'Nov-1','Nov-11','Nov-21','Dec-1','Dec-11','Dec-21',
 ]
-# ───────────────────────────────────────────────────────────────
+
 
 os.makedirs(FIG_DIR, exist_ok=True)
 
@@ -128,7 +115,7 @@ def plot_missing_heatmap(mask, y):
 
     miss_pct = mask.mean(axis=0) * 100
     ax = axes[0]
-    # California = moins de nuages → seuil rouge à 15% au lieu de 30%
+
     ax.bar(np.arange(36), miss_pct,
            color=['#d62728' if v > 15 else '#1f77b4' for v in miss_pct],
            alpha=0.8)
@@ -164,7 +151,7 @@ def plot_missing_heatmap(mask, y):
 
 
 def plot_spectral_signatures(X, y, mask):
-    # California : juillet (T18) est la saison de pointe
+
     T_ETE = 17
     fig, ax = plt.subplots(figsize=(10, 5))
     x_bands = np.arange(10)

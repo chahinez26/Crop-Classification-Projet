@@ -1,18 +1,3 @@
-"""
-PART 2 — ÉTAPE 4 : Entraînement des 5 configurations d'ablation — California
-=============================================================================
-C1 : S2 seulement          → MCTNet baseline
-C2 : S2 + Climat  (3 cov)  → temp_mean, precip_total, solar_mean
-C3 : S2 + Sol     (3 cov)  → soil_ph, soil_oc, soil_texture
-C4 : S2 + Topo    (2 cov)  → elevation, landforms
-C5 : S2 + Tout    (8 cov)  → toutes covariables
-
-6 classes California :
-  Grapes=0, Rice=1, Alfalfa=2, Almonds=3, Pistachios=4, Others=5
-
-Métriques cibles Part 1 (papier Table 5) :
-  MCTNet baseline : OA=0.852, Kappa=0.806, F1=0.829
-"""
 
 import numpy as np
 import torch
@@ -23,7 +8,7 @@ import os, time, json
 from step5_mctnet import count_parameters
 from CAL_Part2_Step3_mctnetcov import build_model
 
-# ── Chemins ────────────────────────────────────────────────────────────────
+
 COV_FILE    = r"data\merged_npz\california\CAL_covariates.npz"
 MODEL_DIR   = r"outputs\results\california\part2\models"
 RESULTS_DIR = r"outputs\results\california\part2\results"
@@ -128,8 +113,7 @@ def compute_metrics(model, loader, device, use_cov):
     N  = len(yt)
     cm = np.zeros((N_CLASSES, N_CLASSES), dtype=np.int64)
     for t, p in zip(yt, yp): cm[t, p] += 1
-    kappa = (N * np.trace(cm) - (cm.sum(1) * cm.sum(0)).sum()) / \
-            (N**2 - (cm.sum(1) * cm.sum(0)).sum())
+    kappa = (N * np.trace(cm) - (cm.sum(1) * cm.sum(0)).sum()) /            (N**2 - (cm.sum(1) * cm.sum(0)).sum())
     f1s = []
     for i in range(N_CLASSES):
         tp = cm[i,i]; fp = cm[:,i].sum()-tp; fn = cm[i,:].sum()-tp
@@ -213,7 +197,7 @@ def main():
         print(f"\n  TEST → OA={metrics['OA']:.4f}  "
               f"Kappa={metrics['Kappa']:.4f}  F1={metrics['F1']:.4f}")
 
-    # Résumé
+
     print(f"\n\n{'='*65}")
     print("RÉSUMÉ ABLATION — California (Part 2)")
     print(f"{'='*65}")
@@ -230,7 +214,7 @@ def main():
     print(f"\n  ★ Best : {all_results[best_k]['label']}  "
           f"(Δ={all_results[best_k]['OA']-base:+.4f})")
 
-    # Sauvegarde
+
     res_f = os.path.join(RESULTS_DIR, 'ablation_results.json')
     with open(res_f, 'w') as f:
         json.dump(all_results, f, indent=2)
