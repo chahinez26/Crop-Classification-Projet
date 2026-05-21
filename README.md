@@ -37,5 +37,5 @@ Design and evaluation of an improved model building on the findings of Parts 1 a
 
 ## Reference
 
-Wang et al. (2024). *A lightweight CNN-Transformer network for pixel-based crop mapping using time-series Sentinel-2 imagery.* Computers and Electronics in Agriculture.
-Remote Sens. (2025). Deep Learning Applications for Crop Mapping Using Multi-Temporal Sentinel-2 Data and Red-Edge Vegetation Indices: Integrating Convolutional and Recurrent Neural Networks.
+- Wang et al. (2024). *A lightweight CNN-Transformer network for pixel-based crop mapping using time-series Sentinel-2 imagery.* Computers and Electronics in Agriculture.
+- Remote Sens. (2025). Deep Learning Applications for Crop Mapping Using Multi-Temporal Sentinel-2 Data and Red-Edge Vegetation Indices: Integrating Convolutional and Recurrent Neural Networks.
